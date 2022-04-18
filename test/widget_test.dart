@@ -7,13 +7,17 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:letstalk/core/internationalization/AppLanguage.dart';
 
 import 'package:letstalk/main.dart';
 
 void main() {
   testWidgets('Counter increments smoke test', (WidgetTester tester) async {
     // Build our app and trigger a frame.
-    await tester.pumpWidget(const MyApp());
+    AppLanguage applanguage = AppLanguage();
+    await tester.pumpWidget(MyApp(
+      appLanguage: applanguage,
+    ));
 
     // Verify that our counter starts at 0.
     expect(find.text('0'), findsOneWidget);
