@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "1043208446215",
+    "project_id": "let-s-talk-cb5e5",
+    "storage_bucket": "let-s-talk-cb5e5.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1043208446215:android:53b7a403c91a6e1e0ee5a2",
+        "android_client_info": {
+          "package_name": "com.example.letstalk"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1043208446215-59dnm4hhvduv45e6ec3t55cs3o5k73bs.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.letstalk",
+            "certificate_hash": "72f9769efe9fc0dd8ec8711ee97637f91ce73ed2"
+          }
+        },
+        {
+          "client_id": "1043208446215-5j72ku2ftdk3c60bco4dvl1td1k37mp8.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDR4WwauHGMpSV7GfCsvVgeWARQFsqOlyA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1043208446215-5j72ku2ftdk3c60bco4dvl1td1k37mp8.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
