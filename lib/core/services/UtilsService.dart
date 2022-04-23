@@ -4,7 +4,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 
 Future<dynamic> getCuisines() async {
-  final String url = 'https://localhost:7026/api/Preference/all';
+  final String url = getIP() + 'Preference/all';
   print('calling $url');
   final dynamic response =
       await http.get(Uri.parse(url), headers: <String, String>{

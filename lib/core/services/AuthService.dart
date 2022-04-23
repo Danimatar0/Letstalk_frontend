@@ -20,7 +20,9 @@ Future<dynamic> register(dynamic user) async {
     debugPrint('------------- ERROR -------------');
     debugPrint(error.toString());
   });
-  return json.decode(response.body);
+  var data = jsonDecode(response.body);
+  print('RESPPP $data');
+  return data;
 }
 
 Future<dynamic> login(dynamic user) async {

@@ -19,6 +19,9 @@ class Languages {
     'text.orWith': 'Or with',
     'text.cuisinePreferences': 'Cuisine Preferences',
     'button.signup': 'Sign up',
+    'alert.register.success': 'You have successfully registered',
+    'alert.SuccessTitle': 'Success',
+    'alert.ErrorTitle': 'Error',
   };
 
   static dynamic fr = {
@@ -40,5 +43,8 @@ class Languages {
     'text.orWith': 'Ou avec',
     'text.cuisinePreferences': 'Préférences culinaires',
     'button.signup': 'S\'inscrire',
+    'alert.register.success': 'Vous avez réussi à vous inscrire',
+    'alert.SuccessTitle': 'Succès',
+    'alert.ErrorTitle': 'Erreur',
   };
 }

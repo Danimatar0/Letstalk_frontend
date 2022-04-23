@@ -1,5 +1,9 @@
+import 'dart:io';
+import 'dart:typed_data';
+
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -16,11 +20,22 @@ import 'core/providers/GoogleSignInProvider.dart';
 import 'core/providers/MenuProvider.dart';
 import 'ui/screens/Auth/LoginPage.dart';
 
+class MyHttpOverrides extends HttpOverrides {
+  @override
+  HttpClient createHttpClient(SecurityContext? context) {
+    return super.createHttpClient(context)
+      ..badCertificateCallback =
+          (X509Certificate cert, String host, int port) => true;
+  }
+}
+
 void main() async {
   // await dotenv.load(fileName: ".env");
   AppLanguage appLanguage = AppLanguage();
   WidgetsFlutterBinding.ensureInitialized();
-  // await Firebase.initializeApp();
+  HttpOverrides.global = MyHttpOverrides();
+
+  await Firebase.initializeApp();
   await appLanguage.fetchLocale();
   runApp(MyApp(
     appLanguage: appLanguage,
