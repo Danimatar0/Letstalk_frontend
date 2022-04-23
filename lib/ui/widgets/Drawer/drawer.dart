@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:letstalk/core/internationalization/AppLanguage.dart';
+import 'package:letstalk/core/providers/providers.dart';
 import 'package:letstalk/utils/common.dart';
 import 'package:provider/provider.dart';
 
@@ -16,8 +17,7 @@ class DrawerWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     final _authController = Get.put(AuthController());
     LoggedUser currentUser = LoggedUser.fromJson(_authController.user);
-    var googleProvider =
-        Provider.of<GoogleSignInProvider>(context, listen: false);
+    var googleProvider = Provider.of<AuthProvider>(context, listen: false);
     var appLanguage = Provider.of<AppLanguage>(context);
     return SafeArea(
       child: Container(
@@ -68,7 +68,7 @@ class DrawerWidget extends StatelessWidget {
               ),
               ListTile(
                 onTap: () {
-                  Get.toNamed('/chats');
+                  Get.toNamed('/listchats');
                 },
                 leading: const Icon(Icons.chat_bubble_outline),
                 title: Text(translate(appLanguage, context, 'drawer.chats')),
@@ -103,7 +103,8 @@ class DrawerWidget extends StatelessWidget {
                 padding: const EdgeInsets.only(top: 20.0, bottom: 20.0),
                 child: ListTile(
                   onTap: () {
-                    googleProvider.googleLogout();
+                    // _authController.isLoading.toggle();
+                    if (currentUser.id == -1) googleProvider.handleSignOut();
                   },
                   title: Text(
                     translate(appLanguage, context, 'drawer.logout'),
@@ -111,10 +112,11 @@ class DrawerWidget extends StatelessWidget {
                   ),
                   leading: IconButton(
                       onPressed: () {
+                        // _authController.isLoading.toggle();
                         if (currentUser.id == -1)
-                          googleProvider.googleLogout();
-                        else
-                          _authController.logout();
+                          googleProvider.handleSignOut();
+                        // else
+                        //   _authController.logout();
                       },
                       icon: const Icon(Icons.logout)),
                 ),

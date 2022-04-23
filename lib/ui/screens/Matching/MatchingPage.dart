@@ -134,7 +134,10 @@ class _MatchingScreenState extends State<MatchingScreen> {
       ),
       drawer: const DrawerWidget(),
       child: Scaffold(
-        appBar: CustomAppBar(controller: _advancedDrawerController),
+        appBar: CustomAppBar(
+          controller: _advancedDrawerController,
+          withTrailingAction: false,
+        ),
         body: Container(
           decoration: BoxDecoration(
               gradient: LinearGradient(

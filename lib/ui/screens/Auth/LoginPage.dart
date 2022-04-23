@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
+import 'package:letstalk/core/providers/AuthProvider.dart';
 import 'package:provider/src/provider.dart';
 import '../../../core/controllers/LoginController.dart';
 import '../../../core/internationalization/AppLanguage.dart';
@@ -80,7 +81,7 @@ class _LandingPageMobileState extends State<LandingPageMobile> {
                             topRight: Radius.circular(60)),
                       ),
                       child: Padding(
-                        padding: const EdgeInsets.all(30),
+                        padding: const EdgeInsets.all(20),
                         child: Column(
                           children: [
                             Container(
@@ -192,14 +193,15 @@ class _LandingPageMobileState extends State<LandingPageMobile> {
                                             ),
                                             child: ListTile(
                                               onTap: () async {
-                                                final provider = Provider.of<
-                                                        GoogleSignInProvider>(
-                                                    context,
-                                                    listen: false);
+                                                final provider =
+                                                    Provider.of<AuthProvider>(
+                                                        context,
+                                                        listen: false);
                                                 bool isAuth = await provider
-                                                    .googleLogin();
+                                                    .handleSignIn();
+                                                    print('authenticated ? $isAuth');
                                                 if (isAuth)
-                                                  Get.toNamed('/match');
+                                                  Get.toNamed('/home');
                                               },
                                               leading: const Icon(
                                                 FontAwesomeIcons.google,
