@@ -1,7 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-
+import 'package:provider/provider.dart';
+import '../core/internationalization/AppLanguage.dart';
 import '../core/internationalization/AppLocalizations.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+import 'package:rflutter_alert/rflutter_alert.dart';
+
+final toast = FToast();
 
 String getCurrentDate() {
   final DateTime now = DateTime.now();
@@ -82,4 +87,147 @@ dynamic getValueFromPath(dynamic object, String path) {
   dynamic newObject = object[firstField.toString()];
 
   return getValueFromPath(newObject, newPath);
+}
+
+showToast(
+  BuildContext context,
+  message,
+  duration,
+  color,
+  double pTop,
+  double pLeft,
+  EdgeInsetsGeometry geometry, {
+  bool translateMessage = true,
+  double? textWidth,
+  void Function()? onTap, // TODO **********************************************
+  bool? withTrailingButton = false,
+}) {
+  toast.init(context);
+  // if (!toastVisible) return;
+  var applang = Provider.of<AppLanguage>(context, listen: false);
+  Widget buildToast = Container(
+    padding: geometry,
+    decoration: BoxDecoration(
+      borderRadius: BorderRadius.circular(25.0),
+      color: color,
+    ),
+    child: Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        // SizedBox(
+        //   width: .05.sw,
+        // ),
+        textWidth != null
+            ? Container(
+                width: textWidth,
+                child: Text(
+                  translateMessage
+                      ? translate(applang, context, message)
+                      : message,
+                  style: TextStyle(color: Colors.white),
+                ),
+              )
+            : Flexible(
+                child: Text(
+                  translateMessage
+                      ? translate(applang, context, message)
+                      : message,
+                  style: TextStyle(color: Colors.white),
+                ),
+              ),
+        withTrailingButton != null
+            ? withTrailingButton
+                ? IconButton(
+                    icon: Icon(Icons.close, color: Colors.white),
+                    onPressed: () {
+                      toast.removeCustomToast();
+                    },
+                  )
+                : Container()
+            : Container(),
+        // CloseButton(
+        //   color: Colors.white,
+        // )
+      ],
+    ),
+  );
+  // Custom Toast Position
+
+  toast.showToast(
+      child: buildToast,
+      toastDuration: duration,
+      positionedToastBuilder: (context, child) {
+        return Positioned(
+          child: MouseRegion(
+            cursor:
+                onTap != null ? SystemMouseCursors.click : MouseCursor.defer,
+            child: GestureDetector(
+              child: child,
+              onTap: () {
+                if (onTap != null) {
+                  onTap();
+                  toast.removeCustomToast();
+                }
+              },
+            ),
+          ),
+          top: pTop,
+          left: pLeft,
+        );
+      });
+}
+
+customAlert(context, title, desc, type, animationType, textColor) {
+  Widget fadeAlertAnimation(
+    BuildContext context,
+    Animation<double> animation,
+    Animation<double> secondaryAnimation,
+    Widget child,
+  ) {
+    return Align(
+      child: FadeTransition(
+        opacity: animation,
+        child: child,
+      ),
+    );
+  }
+
+  var alertStyle = AlertStyle(
+      animationType: animationType,
+      isCloseButton: true,
+      isOverlayTapDismiss: true,
+      descStyle: TextStyle(fontWeight: FontWeight.bold),
+      animationDuration: Duration(milliseconds: 400),
+      alertBorder: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(10.0),
+        side: BorderSide(
+          color: const Color(0xffBEBEBE),
+        ),
+      ),
+      titleStyle: TextStyle(
+        color: textColor,
+      ),
+      overlayColor: Color(0x55000000),
+      alertElevation: 0,
+      alertAlignment: Alignment.topCenter);
+  Alert(
+    context: context,
+    type: type,
+    style: alertStyle,
+    title: title,
+    desc: desc,
+    alertAnimation: fadeAlertAnimation,
+  ).show();
+
+  //this method is called to open dialog on iconPress
+  openDialog(Color barrierColor, dynamic tBuilder, dynamic pBuilder,
+      dynamic tDuration) {
+    showGeneralDialog(
+        context: context,
+        barrierColor: barrierColor,
+        transitionBuilder: tBuilder,
+        pageBuilder: pBuilder,
+        transitionDuration: tDuration,
+        barrierDismissible: true);
+  }
 }

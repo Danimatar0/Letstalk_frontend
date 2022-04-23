@@ -14,9 +14,11 @@ class Languages {
     'placeholder.confirmPassword': 'Confirm Password',
     'placeholder.firstname': 'Firstname',
     'placeholder.lastname': 'Lastname',
-    'placeholder.phone': 'Phone',
+    'placeholder.phone': 'Phone number',
     'placeholder.dob': 'Date of birth',
     'text.orWith': 'Or with',
+    'text.cuisinePreferences': 'Cuisine Preferences',
+    'button.signup': 'Sign up',
   };
 
   static dynamic fr = {
@@ -36,5 +38,7 @@ class Languages {
     'placeholder.phone': 'Numéro de téléphone',
     'placeholder.dob': 'Date de naissance',
     'text.orWith': 'Ou avec',
+    'text.cuisinePreferences': 'Préférences culinaires',
+    'button.signup': 'S\'inscrire',
   };
 }

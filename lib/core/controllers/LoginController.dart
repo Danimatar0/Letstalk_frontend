@@ -3,7 +3,7 @@ import 'package:get/state_manager.dart';
 
 import '../models/LoggedUser.dart';
 
-class LoginController extends GetxController {
+class AuthController extends GetxController {
   RxString loginMethod = ''.obs;
   dynamic user = {}.obs;
   RxBool isLoading = false.obs;

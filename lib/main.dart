@@ -20,7 +20,7 @@ void main() async {
   // await dotenv.load(fileName: ".env");
   AppLanguage appLanguage = AppLanguage();
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp();
+  // await Firebase.initializeApp();
   await appLanguage.fetchLocale();
   runApp(MyApp(
     appLanguage: appLanguage,

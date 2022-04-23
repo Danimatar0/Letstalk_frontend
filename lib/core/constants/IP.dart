@@ -1,4 +1,4 @@
-String ip = 'http://localhost:4000/';
+String ip = 'https://192.168.1.104:7026/api/';
 
 // returns your local backend ip
 String getIP() {

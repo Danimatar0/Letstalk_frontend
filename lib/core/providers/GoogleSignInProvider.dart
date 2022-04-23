@@ -15,7 +15,7 @@ class GoogleSignInProvider extends ChangeNotifier {
   ]);
   late GoogleSignInAccount _user;
   GoogleSignInAccount get user => _user;
-  final _loginController = Get.put(LoginController());
+  final _authController = Get.put(AuthController());
   late SharedPreferences prefs;
 
   Future<List<dynamic>> getUserContacts() async {
@@ -44,7 +44,7 @@ class GoogleSignInProvider extends ChangeNotifier {
   Future<bool> googleLogin() async {
     final googleUser = await googleSignIn.signIn();
     prefs = await SharedPreferences.getInstance();
-    _loginController.isLoading.toggle();
+    _authController.isLoading.toggle();
     if (googleUser == null) return false;
     _user = googleUser;
     final googleAuth = await _user.authentication;
@@ -64,10 +64,10 @@ class GoogleSignInProvider extends ChangeNotifier {
           lastname: fullname[1],
           imgUrl: authCred.user!.photoURL!,
         );
-        _loginController.setUser(loggedUser);
+        _authController.setUser(loggedUser);
         prefs.setBool('isAuthenticated', true);
         prefs.setString('username', authCred.user!.email!);
-        _loginController.isLoading.toggle();
+        _authController.isLoading.toggle();
         notifyListeners();
         return true;
       } else {

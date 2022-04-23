@@ -21,6 +21,7 @@ class CustomButton extends StatelessWidget {
   final bool? isGradientText;
   final Shader? linearGradient;
   final Color? bgColor;
+  final TextStyle? textStyle;
 
   ///The parameters of the CustomButtom are:
   /// [title] - the title of the button (For both Format) (should be a String)
@@ -38,6 +39,7 @@ class CustomButton extends StatelessWidget {
     this.linearGradient,
     this.isGradientText = false,
     this.bgColor = Colors.white,
+    this.textStyle = const TextStyle(fontSize: 10),
     required this.onTapCallBack,
     // this.size = const Size(170, 40),
   })  : this.preIcon = Icon(Icons.add),
@@ -51,6 +53,7 @@ class CustomButton extends StatelessWidget {
     this.isGradientText = true,
     this.bgColor = Colors.white,
     this.linearGradient,
+    this.textStyle = const TextStyle(fontSize: 10),
     required this.onTapCallBack,
     // this.size = const Size(170, 40),
   })  : this.preIcon = Icon(Icons.add),
@@ -66,6 +69,7 @@ class CustomButton extends StatelessWidget {
     this.linearGradient,
     this.isGradientText = false,
     this.bgColor = Colors.white,
+    this.textStyle = const TextStyle(fontSize: 10),
     required this.preIcon,
     // this.size = const Size(170, 40),
     required this.onTapCallBack,
@@ -101,7 +105,7 @@ class CustomButton extends StatelessWidget {
                       style: _buttonType == 'default'
                           ? TextStyle(
                               fontSize: isMobile(context)
-                                  ? 14
+                                  ? 16
                                   : 1.sw / 200 + 1.sh / 133,
                               fontWeight: FontWeight.bold,
                               color: color)

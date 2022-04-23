@@ -25,7 +25,7 @@ class _LandingPageMobileState extends State<LandingPageMobile> {
   Widget build(BuildContext context) {
     var width = MediaQuery.of(context).size.width;
     var height = MediaQuery.of(context).size.height;
-    final _loginController = Get.put(LoginController());
+    final _authController = Get.put(AuthController());
     var appLanguage = Provider.of<AppLanguage>(context);
 
     final Shader linearGradient = const LinearGradient(
@@ -38,7 +38,7 @@ class _LandingPageMobileState extends State<LandingPageMobile> {
     ).createShader(const Rect.fromLTWH(0.0, 0.0, 200.0, 70.0));
     return Scaffold(
       resizeToAvoidBottomInset: false,
-      body: Obx(() => _loginController.isLoading.isTrue
+      body: Obx(() => _authController.isLoading.isTrue
           ? const Center(child: CircularProgressIndicator(color: Colors.purple))
           : Container(
               width: double.infinity,
@@ -218,7 +218,7 @@ class _LandingPageMobileState extends State<LandingPageMobile> {
                             ),
                             Row(
                               mainAxisSize: MainAxisSize.max,
-                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                              mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 Text('Don\'t have an account?'),
                                 TextButton(

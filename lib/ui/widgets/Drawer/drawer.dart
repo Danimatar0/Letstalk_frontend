@@ -14,8 +14,8 @@ class DrawerWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final _loginController = Get.put(LoginController());
-    LoggedUser currentUser = LoggedUser.fromJson(_loginController.user);
+    final _authController = Get.put(AuthController());
+    LoggedUser currentUser = LoggedUser.fromJson(_authController.user);
     var googleProvider =
         Provider.of<GoogleSignInProvider>(context, listen: false);
     var appLanguage = Provider.of<AppLanguage>(context);
@@ -114,7 +114,7 @@ class DrawerWidget extends StatelessWidget {
                         if (currentUser.id == -1)
                           googleProvider.googleLogout();
                         else
-                          _loginController.logout();
+                          _authController.logout();
                       },
                       icon: const Icon(Icons.logout)),
                 ),
