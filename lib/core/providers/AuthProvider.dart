@@ -48,18 +48,21 @@ class AuthProvider extends ChangeNotifier {
   Future<bool> handleSignIn() async {
     _status = Status.authenticating;
     notifyListeners();
-
+    print('test test 0');
     GoogleSignInAccount? googleUser = await googleSignIn.signIn();
     if (googleUser != null) {
+      print('Fet aw ma fet ?');
       GoogleSignInAuthentication? googleAuth = await googleUser.authentication;
+      print(googleAuth.idToken);
+      print(googleAuth.accessToken);
       final AuthCredential credential = GoogleAuthProvider.credential(
         accessToken: googleAuth.accessToken,
         idToken: googleAuth.idToken,
       );
-
+      print('Test Test 1 ');
       User? firebaseUser =
           (await firebaseAuth.signInWithCredential(credential)).user;
-
+      print('Test Test 2 ');
       if (firebaseUser != null) {
         final QuerySnapshot result = await firebaseFirestore
             .collection(FirestoreConstants.pathUserCollection)
@@ -107,6 +110,7 @@ class AuthProvider extends ChangeNotifier {
     } else {
       _status = Status.authenticateCanceled;
       notifyListeners();
+      print('not signed in');
       return false;
     }
   }

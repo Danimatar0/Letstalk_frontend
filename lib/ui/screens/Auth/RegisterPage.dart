@@ -1,5 +1,3 @@
-import 'dart:html';
-
 // import 'package:dropdown_search/dropdown_search.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -118,325 +116,335 @@ class _RegisterState extends State<Register> {
     List<Widget> pageViewChildren = [];
     pageViewChildren.add(
       Container(
-        height: .7.sh,
+        height: .1.sh,
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(10),
         ),
-        child: Column(
-          children: [
-            //#Firstname
-            Container(
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                border: Border(bottom: BorderSide(color: Colors.grey.shade200)),
-              ),
-              child: TextFormField(
-                autovalidateMode: AutovalidateMode.onUserInteraction,
-                toolbarOptions: ToolbarOptions(
-                    copy: true, paste: true, selectAll: true, cut: true),
-                onChanged: (value) {
-                  if (value.isNotEmpty && value != '') {
-                    setState(() {
-                      firstname = value;
-                    });
-                  }
-                },
-                validator: (val) =>
-                    firstname == '' ? "Enter a valid firstname" : null,
-                decoration: InputDecoration(
-                    suffixIcon: Icon(Icons.perm_identity_sharp),
-                    hintText: translate(
-                        appLanguage, context, 'placeholder.firstname'),
-                    hintStyle: TextStyle(color: Colors.grey),
-                    border: InputBorder.none),
-              ),
-            ),
-            //#Lastname
-            Container(
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                border: Border(bottom: BorderSide(color: Colors.grey.shade200)),
-              ),
-              child: TextFormField(
-                autovalidateMode: AutovalidateMode.onUserInteraction,
-                toolbarOptions: ToolbarOptions(
-                    copy: true, paste: true, selectAll: true, cut: true),
-                onChanged: (value) {
-                  if (value.isNotEmpty && value != '') {
-                    setState(() {
-                      lastname = value;
-                    });
-                  }
-                },
-                validator: (val) =>
-                    lastname == '' ? "Enter a valid lastname" : null,
-                decoration: InputDecoration(
-                    suffixIcon: Icon(Icons.perm_identity_sharp),
-                    hintText:
-                        translate(appLanguage, context, 'placeholder.lastname'),
-                    hintStyle: TextStyle(color: Colors.grey),
-                    border: InputBorder.none),
-              ),
-            ),
-            //#Email
-            Container(
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                border: Border(bottom: BorderSide(color: Colors.grey.shade200)),
-              ),
-              child: TextFormField(
-                autovalidateMode: AutovalidateMode.onUserInteraction,
-                keyboardType: TextInputType.emailAddress,
-                toolbarOptions: ToolbarOptions(
-                    copy: true, paste: true, selectAll: true, cut: true),
-                onChanged: (value) {
-                  if (value.isNotEmpty && value != '') {
-                    setState(() {
-                      email = value;
-                    });
-                  }
-                },
-                validator: (val) => (email == '' || !email.isEmail)
-                    ? "Enter a valid email"
-                    : null,
-                decoration: InputDecoration(
-                  suffixIcon: Icon(Icons.email_outlined),
-                  hintText:
-                      translate(appLanguage, context, 'placeholder.email'),
-                  hintStyle: TextStyle(color: Colors.grey),
-                  border: InputBorder.none,
+        child: SingleChildScrollView(
+          child: Column(
+            children: [
+              //#Firstname
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  border:
+                      Border(bottom: BorderSide(color: Colors.grey.shade200)),
+                ),
+                child: TextFormField(
+                  autovalidateMode: AutovalidateMode.onUserInteraction,
+                  toolbarOptions: ToolbarOptions(
+                      copy: true, paste: true, selectAll: true, cut: true),
+                  onChanged: (value) {
+                    if (value.isNotEmpty && value != '') {
+                      setState(() {
+                        firstname = value;
+                      });
+                    }
+                  },
+                  validator: (val) =>
+                      firstname == '' ? "Enter a valid firstname" : null,
+                  decoration: InputDecoration(
+                      suffixIcon: Icon(Icons.perm_identity_sharp),
+                      hintText: translate(
+                          appLanguage, context, 'placeholder.firstname'),
+                      hintStyle: TextStyle(color: Colors.grey),
+                      border: InputBorder.none),
                 ),
               ),
-            ),
-            //#Phone
-            Container(
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                border: Border(bottom: BorderSide(color: Colors.grey.shade200)),
-              ),
-              child: TextFormField(
-                autovalidateMode: AutovalidateMode.onUserInteraction,
-                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                keyboardType: TextInputType.phone,
-                toolbarOptions: ToolbarOptions(
-                    copy: true, paste: true, selectAll: true, cut: true),
-                onChanged: (value) {
-                  if (value.isNotEmpty && value != '') {
-                    setState(() {
-                      phone = value;
-                    });
-                  }
-                },
-                validator: (val) => (phone == '' || !phone.isPhoneNumber)
-                    ? "Enter a valid phone number"
-                    : null,
-                decoration: InputDecoration(
-                    suffixIcon: Icon(Icons.phone_iphone_sharp),
-                    hintText:
-                        translate(appLanguage, context, 'placeholder.phone'),
-                    hintStyle: TextStyle(color: Colors.grey),
-                    border: InputBorder.none),
-              ),
-            ),
-            //#DOB
-            Container(
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                border: Border(bottom: BorderSide(color: Colors.grey.shade200)),
-              ),
-              child: TextField(
-                controller: dobEditingController,
-                onTap: () async {
-                  final DateTime? date = await showDatePicker(
-                    context: context,
-                    initialDate: selectedDate,
-                    firstDate: firstDate,
-                    lastDate: lastDate,
-                  );
-                  if (date != null) {
-                    String dateString = DateFormat('dd-MM-yyyy').format(date);
-                    setState(() {
-                      dob = dateString;
-                    });
-                    dobEditingController.text = dob;
-                  }
-                },
-                decoration: InputDecoration(
-                    suffixIcon: Icon(Icons.date_range_outlined),
-                    hintText:
-                        translate(appLanguage, context, 'placeholder.dob'),
-                    hintStyle: TextStyle(color: Colors.grey),
-                    border: InputBorder.none),
-              ),
-            ),
-            //#Gender
-            Container(
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                border: Border(bottom: BorderSide(color: Colors.grey.shade200)),
-              ),
-              child: Wrap(children: [
-                Text('Gender :', style: TextStyle(color: Colors.grey)),
-                ListTile(
-                  leading: Radio(
-                      value: 'Male',
-                      groupValue: selectedGender,
-                      onChanged: (val) => _handleOnRadioChanged(val)),
-                  title: Text('Male'),
+              //#Lastname
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  border:
+                      Border(bottom: BorderSide(color: Colors.grey.shade200)),
                 ),
-                ListTile(
-                  leading: Radio(
-                      value: 'Female',
-                      groupValue: selectedGender,
-                      onChanged: (val) => _handleOnRadioChanged(val)),
-                  title: Text('Female'),
+                child: TextFormField(
+                  autovalidateMode: AutovalidateMode.onUserInteraction,
+                  toolbarOptions: ToolbarOptions(
+                      copy: true, paste: true, selectAll: true, cut: true),
+                  onChanged: (value) {
+                    if (value.isNotEmpty && value != '') {
+                      setState(() {
+                        lastname = value;
+                      });
+                    }
+                  },
+                  validator: (val) =>
+                      lastname == '' ? "Enter a valid lastname" : null,
+                  decoration: InputDecoration(
+                      suffixIcon: Icon(Icons.perm_identity_sharp),
+                      hintText: translate(
+                          appLanguage, context, 'placeholder.lastname'),
+                      hintStyle: TextStyle(color: Colors.grey),
+                      border: InputBorder.none),
                 ),
-                ListTile(
-                  leading: Radio(
-                      value: 'Other',
-                      groupValue: selectedGender,
-                      onChanged: (val) => _handleOnRadioChanged(val)),
-                  title: Text('Other'),
-                ),
-              ]),
-            ),
-            //#Password
-            Container(
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                border: Border(bottom: BorderSide(color: Colors.grey.shade200)),
               ),
-              child: TextFormField(
-                autovalidateMode: AutovalidateMode.onUserInteraction,
-                obscureText: !showPlainPasswd,
-                onChanged: (value) {
-                  if (value.isNotEmpty && value != '') {
-                    setState(() {
-                      password = value;
-                    });
-                  }
-                },
-                validator: (val) => validatePassword(val!, false),
-                decoration: InputDecoration(
-                    suffixIcon: IconButton(
-                        onPressed: () {
-                          setState(() {
-                            showPlainPasswd = !showPlainPasswd;
-                          });
-                        },
-                        icon: Icon(Icons.remove_red_eye)),
+              //#Email
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  border:
+                      Border(bottom: BorderSide(color: Colors.grey.shade200)),
+                ),
+                child: TextFormField(
+                  autovalidateMode: AutovalidateMode.onUserInteraction,
+                  keyboardType: TextInputType.emailAddress,
+                  toolbarOptions: ToolbarOptions(
+                      copy: true, paste: true, selectAll: true, cut: true),
+                  onChanged: (value) {
+                    if (value.isNotEmpty && value != '') {
+                      setState(() {
+                        email = value;
+                      });
+                    }
+                  },
+                  validator: (val) => (email == '' || !email.isEmail)
+                      ? "Enter a valid email"
+                      : null,
+                  decoration: InputDecoration(
+                    suffixIcon: Icon(Icons.email_outlined),
                     hintText:
-                        translate(appLanguage, context, 'placeholder.password'),
+                        translate(appLanguage, context, 'placeholder.email'),
                     hintStyle: TextStyle(color: Colors.grey),
-                    border: InputBorder.none),
+                    border: InputBorder.none,
+                  ),
+                ),
               ),
-            ),
-            //#Confirm Password
-            Container(
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                border: Border(bottom: BorderSide(color: Colors.grey.shade200)),
+              //#Phone
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  border:
+                      Border(bottom: BorderSide(color: Colors.grey.shade200)),
+                ),
+                child: TextFormField(
+                  autovalidateMode: AutovalidateMode.onUserInteraction,
+                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                  keyboardType: TextInputType.phone,
+                  toolbarOptions: ToolbarOptions(
+                      copy: true, paste: true, selectAll: true, cut: true),
+                  onChanged: (value) {
+                    if (value.isNotEmpty && value != '') {
+                      setState(() {
+                        phone = value;
+                      });
+                    }
+                  },
+                  validator: (val) => (phone == '' || !phone.isPhoneNumber)
+                      ? "Enter a valid phone number"
+                      : null,
+                  decoration: InputDecoration(
+                      suffixIcon: Icon(Icons.phone_iphone_sharp),
+                      hintText:
+                          translate(appLanguage, context, 'placeholder.phone'),
+                      hintStyle: TextStyle(color: Colors.grey),
+                      border: InputBorder.none),
+                ),
               ),
-              child: TextFormField(
-                autovalidateMode: AutovalidateMode.onUserInteraction,
-                obscureText: !showPlainConfirmPasswd,
-                onChanged: (value) {
-                  if (value.isNotEmpty && value != '') {
-                    setState(() {
-                      confirmpassword = value;
-                    });
-                  }
-                },
-                validator: (val) => validatePassword(val!, true),
-                decoration: InputDecoration(
-                    suffixIcon: IconButton(
-                        onPressed: () {
-                          setState(() {
-                            showPlainConfirmPasswd = !showPlainConfirmPasswd;
-                          });
-                        },
-                        icon: Icon(Icons.remove_red_eye)),
-                    hintText: translate(
-                        appLanguage, context, 'placeholder.confirmPassword'),
-                    hintStyle: const TextStyle(color: Colors.grey),
-                    border: InputBorder.none),
+              //#DOB
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  border:
+                      Border(bottom: BorderSide(color: Colors.grey.shade200)),
+                ),
+                child: TextField(
+                  controller: dobEditingController,
+                  onTap: () async {
+                    final DateTime? date = await showDatePicker(
+                      context: context,
+                      initialDate: selectedDate,
+                      firstDate: firstDate,
+                      lastDate: lastDate,
+                    );
+                    if (date != null) {
+                      String dateString = DateFormat('dd-MM-yyyy').format(date);
+                      setState(() {
+                        dob = dateString;
+                      });
+                      dobEditingController.text = dob;
+                    }
+                  },
+                  decoration: InputDecoration(
+                      suffixIcon: Icon(Icons.date_range_outlined),
+                      hintText:
+                          translate(appLanguage, context, 'placeholder.dob'),
+                      hintStyle: TextStyle(color: Colors.grey),
+                      border: InputBorder.none),
+                ),
               ),
-            ),
-            // Container(
-            //     height: .1.sh,
-            //     padding: const EdgeInsets.all(10),
-            //     decoration: BoxDecoration(
-            //       border:
-            //           Border(bottom: BorderSide(color: Colors.grey.shade200)),
-            //     ),
-            //     child: ExpansionTile(
-            //       title: Text('Preferences'),
-            //       children: fetchedCuisines
-            //           .map((e) => ListTile(
-            //                 title: Text(e['cuisineName']),
-            //                 onTap: () {
-            //                   print('selected preference -> $e');
-            //                 },
-            //               ))
-            //           .toList(),
-            //     )
-            //     // DropdownSearch<
-            //     //     dynamic>.multiSelection(
-            //     //   mode: Mode.MENU,
-            //     //   items: fetchedCuisines,
-            //     //   dropdownSearchDecoration:
-            //     //       InputDecoration(
-            //     //           border:
-            //     //               OutlineInputBorder(
-            //     //                   borderRadius:
-            //     //                       BorderRadius
-            //     //                           .circular(
-            //     //                               10)),
-            //     //           alignLabelWithHint: true,
-            //     //           hintText: translate(
-            //     //               appLanguage,
-            //     //               context,
-            //     //               'text.cuisinePreferences')),
-            //     //   searchFieldProps: TextFieldProps(
-            //     //       controller:
-            //     //           cuisineEditingController,
-            //     //       decoration: const InputDecoration(
-            //     //         suffixIcon: Icon(Icons.search),
-            //     //       ),
-            //     //       showCursor: true),
-            //     //   showSearchBox: true,
-            //     //   showClearButton: true,
-            //     //   showSelectedItems: true,
-            //     //   maxHeight: .1.sh,
-            //     //   compareFn: (item, selectedItem) =>
-            //     //       item['id'] == selectedItem['id'],
-            //     //   scrollbarProps: ScrollbarProps(
-            //     //     thickness: 7,
-            //     //   ),
-            //     //   clearButtonSplashRadius: 20,
-            //     //   selectedItems: selectedCuisines,
-            //     //   popupSelectionWidget:
-            //     //       (BuildContext ctx, item,
-            //     //               isSelected) =>
-            //     //           (isSelected)
-            //     //               ? Icon(Icons.check_circle,
-            //     //                   color:
-            //     //                       Colors.green[500])
-            //     //               : Container(),
-            //     //   onChanged: (List cuisines) {
-            //     //     print(
-            //     //         'selected cuisines $cuisines');
-            //     //     if (cuisines.isNotEmpty) {
-            //     //       setState(() {
-            //     //         selectedCuisines = cuisines;
-            //     //       });
-            //     //     }
-            //     //   },
-            //     // ),
+              //#Gender
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  border:
+                      Border(bottom: BorderSide(color: Colors.grey.shade200)),
+                ),
+                child: Wrap(children: [
+                  Text('Gender :', style: TextStyle(color: Colors.grey)),
+                  ListTile(
+                    leading: Radio(
+                        value: 'Male',
+                        groupValue: selectedGender,
+                        onChanged: (val) => _handleOnRadioChanged(val)),
+                    title: Text('Male'),
+                  ),
+                  ListTile(
+                    leading: Radio(
+                        value: 'Female',
+                        groupValue: selectedGender,
+                        onChanged: (val) => _handleOnRadioChanged(val)),
+                    title: Text('Female'),
+                  ),
+                  ListTile(
+                    leading: Radio(
+                        value: 'Other',
+                        groupValue: selectedGender,
+                        onChanged: (val) => _handleOnRadioChanged(val)),
+                    title: Text('Other'),
+                  ),
+                ]),
+              ),
+              //#Password
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  border:
+                      Border(bottom: BorderSide(color: Colors.grey.shade200)),
+                ),
+                child: TextFormField(
+                  autovalidateMode: AutovalidateMode.onUserInteraction,
+                  obscureText: !showPlainPasswd,
+                  onChanged: (value) {
+                    if (value.isNotEmpty && value != '') {
+                      setState(() {
+                        password = value;
+                      });
+                    }
+                  },
+                  validator: (val) => validatePassword(val!, false),
+                  decoration: InputDecoration(
+                      suffixIcon: IconButton(
+                          onPressed: () {
+                            setState(() {
+                              showPlainPasswd = !showPlainPasswd;
+                            });
+                          },
+                          icon: Icon(Icons.remove_red_eye)),
+                      hintText: translate(
+                          appLanguage, context, 'placeholder.password'),
+                      hintStyle: TextStyle(color: Colors.grey),
+                      border: InputBorder.none),
+                ),
+              ),
+              //#Confirm Password
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  border:
+                      Border(bottom: BorderSide(color: Colors.grey.shade200)),
+                ),
+                child: TextFormField(
+                  autovalidateMode: AutovalidateMode.onUserInteraction,
+                  obscureText: !showPlainConfirmPasswd,
+                  onChanged: (value) {
+                    if (value.isNotEmpty && value != '') {
+                      setState(() {
+                        confirmpassword = value;
+                      });
+                    }
+                  },
+                  validator: (val) => validatePassword(val!, true),
+                  decoration: InputDecoration(
+                      suffixIcon: IconButton(
+                          onPressed: () {
+                            setState(() {
+                              showPlainConfirmPasswd = !showPlainConfirmPasswd;
+                            });
+                          },
+                          icon: Icon(Icons.remove_red_eye)),
+                      hintText: translate(
+                          appLanguage, context, 'placeholder.confirmPassword'),
+                      hintStyle: const TextStyle(color: Colors.grey),
+                      border: InputBorder.none),
+                ),
+              ),
+              // Container(
+              //     height: .1.sh,
+              //     padding: const EdgeInsets.all(10),
+              //     decoration: BoxDecoration(
+              //       border:
+              //           Border(bottom: BorderSide(color: Colors.grey.shade200)),
+              //     ),
+              //     child: ExpansionTile(
+              //       title: Text('Preferences'),
+              //       children: fetchedCuisines
+              //           .map((e) => ListTile(
+              //                 title: Text(e['cuisineName']),
+              //                 onTap: () {
+              //                   print('selected preference -> $e');
+              //                 },
+              //               ))
+              //           .toList(),
+              //     )
+              //     // DropdownSearch<
+              //     //     dynamic>.multiSelection(
+              //     //   mode: Mode.MENU,
+              //     //   items: fetchedCuisines,
+              //     //   dropdownSearchDecoration:
+              //     //       InputDecoration(
+              //     //           border:
+              //     //               OutlineInputBorder(
+              //     //                   borderRadius:
+              //     //                       BorderRadius
+              //     //                           .circular(
+              //     //                               10)),
+              //     //           alignLabelWithHint: true,
+              //     //           hintText: translate(
+              //     //               appLanguage,
+              //     //               context,
+              //     //               'text.cuisinePreferences')),
+              //     //   searchFieldProps: TextFieldProps(
+              //     //       controller:
+              //     //           cuisineEditingController,
+              //     //       decoration: const InputDecoration(
+              //     //         suffixIcon: Icon(Icons.search),
+              //     //       ),
+              //     //       showCursor: true),
+              //     //   showSearchBox: true,
+              //     //   showClearButton: true,
+              //     //   showSelectedItems: true,
+              //     //   maxHeight: .1.sh,
+              //     //   compareFn: (item, selectedItem) =>
+              //     //       item['id'] == selectedItem['id'],
+              //     //   scrollbarProps: ScrollbarProps(
+              //     //     thickness: 7,
+              //     //   ),
+              //     //   clearButtonSplashRadius: 20,
+              //     //   selectedItems: selectedCuisines,
+              //     //   popupSelectionWidget:
+              //     //       (BuildContext ctx, item,
+              //     //               isSelected) =>
+              //     //           (isSelected)
+              //     //               ? Icon(Icons.check_circle,
+              //     //                   color:
+              //     //                       Colors.green[500])
+              //     //               : Container(),
+              //     //   onChanged: (List cuisines) {
+              //     //     print(
+              //     //         'selected cuisines $cuisines');
+              //     //     if (cuisines.isNotEmpty) {
+              //     //       setState(() {
+              //     //         selectedCuisines = cuisines;
+              //     //       });
+              //     //     }
+              //     //   },
+              //     // ),
 
-            //     ),
-          ],
+              //     ),
+            ],
+          ),
         ),
       ),
     );
