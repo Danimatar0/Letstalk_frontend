@@ -10,13 +10,16 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:letstalk/core/internationalization/AppLanguage.dart';
 
 import 'package:letstalk/main.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
   testWidgets('Counter increments smoke test', (WidgetTester tester) async {
     // Build our app and trigger a frame.
     AppLanguage applanguage = AppLanguage();
+    SharedPreferences prefs = await SharedPreferences.getInstance();
     await tester.pumpWidget(MyApp(
       appLanguage: applanguage,
+      prefs: prefs,
     ));
 
     // Verify that our counter starts at 0.

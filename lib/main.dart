@@ -1,12 +1,21 @@
+import 'dart:io';
+
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:google_sign_in/google_sign_in.dart';
+import 'package:letstalk/core/providers/AuthProvider.dart';
+import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
 import 'package:letstalk/ui/screens/Matching/MatchingPage.dart';
 import 'package:letstalk/utils/styles.dart';
-import 'package:provider/provider.dart';
 
 import 'core/internationalization/AppLanguage.dart';
 import 'core/internationalization/AppLocalizationsDelegate.dart';
@@ -20,24 +29,45 @@ void main() async {
   // await dotenv.load(fileName: ".env");
   AppLanguage appLanguage = AppLanguage();
   WidgetsFlutterBinding.ensureInitialized();
-  // await Firebase.initializeApp();
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  HttpOverrides.global = MyHttpOverrides();
+  await Firebase.initializeApp();
   await appLanguage.fetchLocale();
-  runApp(MyApp(
-    appLanguage: appLanguage,
-  ));
+  runApp(MyApp(appLanguage: appLanguage, prefs: prefs));
+}
+
+class MyHttpOverrides extends HttpOverrides {
+  @override
+  HttpClient createHttpClient(SecurityContext? context) {
+    return super.createHttpClient(context)
+      ..badCertificateCallback =
+          (X509Certificate cert, String host, int port) => true;
+  }
 }
 
 class MyApp extends StatelessWidget {
   final AppLanguage appLanguage;
-  const MyApp({Key? key, required this.appLanguage}) : super(key: key);
 
+  MyApp({
+    Key? key,
+    required this.appLanguage,
+    required this.prefs,
+  }) : super(key: key);
+
+  final SharedPreferences prefs;
+  final FirebaseFirestore firebaseFirestore = FirebaseFirestore.instance;
+  final FirebaseStorage firebaseStorage = FirebaseStorage.instance;
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
         create: (_) => MenuProvider(),
         child: ChangeNotifierProvider(
-            create: (context) => GoogleSignInProvider(),
+            create: (context) => AuthProvider(
+                firebaseAuth: FirebaseAuth.instance,
+                googleSignIn: GoogleSignIn(),
+                prefs: this.prefs,
+                firebaseFirestore: this.firebaseFirestore),
             child: ChangeNotifierProvider<CardProvider>(
                 create: (context) => CardProvider(),
                 child: ChangeNotifierProvider<AppLanguage>(
