@@ -4,6 +4,7 @@ import 'package:iconsax/iconsax.dart';
 import 'package:letstalk/core/internationalization/AppLanguage.dart';
 import 'package:letstalk/core/providers/providers.dart';
 import 'package:letstalk/utils/common.dart';
+import 'package:letstalk/utils/styles.dart';
 import 'package:provider/provider.dart';
 
 import '../../../core/controllers/LoginController.dart';
@@ -40,7 +41,12 @@ class DrawerWidget extends StatelessWidget {
                     color: Colors.grey.shade800,
                     shape: BoxShape.circle,
                   ),
-                  child: Image.network(currentUser.imgUrl)),
+                  child:
+                      (currentUser.imgUrl == null || currentUser.imgUrl == '')
+                          ? Container(
+                              color: PRIMARY_COLOR,
+                            )
+                          : Image.network(currentUser.imgUrl)),
               const SizedBox(
                 height: 10,
               ),
@@ -104,7 +110,10 @@ class DrawerWidget extends StatelessWidget {
                 child: ListTile(
                   onTap: () {
                     // _authController.isLoading.toggle();
-                    if (currentUser.id == -1) googleProvider.handleSignOut();
+                    if (currentUser.id == -1)
+                      googleProvider.handleSignOut();
+                    else
+                      _authController.logout();
                   },
                   title: Text(
                     translate(appLanguage, context, 'drawer.logout'),
@@ -115,6 +124,8 @@ class DrawerWidget extends StatelessWidget {
                         // _authController.isLoading.toggle();
                         if (currentUser.id == -1)
                           googleProvider.handleSignOut();
+                        else
+                          _authController.logout();
                         // else
                         //   _authController.logout();
                       },

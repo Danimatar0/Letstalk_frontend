@@ -6,12 +6,22 @@ class LoggedUser {
   String firstname;
   String lastname;
   String imgUrl;
+  String? token;
+  String? phone;
+  String? dob;
+  String? gender;
+  String? FirebaseId;
   LoggedUser({
     required this.id,
     required this.username,
     required this.firstname,
     required this.lastname,
     required this.imgUrl,
+    this.token,
+    this.phone,
+    this.dob,
+    this.gender,
+    this.FirebaseId,
   });
 
   LoggedUser copyWith({
@@ -20,6 +30,11 @@ class LoggedUser {
     String? firstname,
     String? lastname,
     String? imgUrl,
+    String? token,
+    String? phone,
+    String? dob,
+    String? gender,
+    String? FirebaseId,
   }) {
     return LoggedUser(
       id: id ?? this.id,
@@ -27,6 +42,11 @@ class LoggedUser {
       firstname: firstname ?? this.firstname,
       lastname: lastname ?? this.lastname,
       imgUrl: imgUrl ?? this.imgUrl,
+      token: token ?? this.token,
+      phone: phone ?? this.phone,
+      dob: dob ?? this.dob,
+      gender: gender ?? this.gender,
+      FirebaseId: FirebaseId ?? this.FirebaseId,
     );
   }
 
@@ -37,6 +57,11 @@ class LoggedUser {
       'firstname': firstname,
       'lastname': lastname,
       'imgUrl': imgUrl,
+      'token': token,
+      'phone': phone,
+      'dob': dob,
+      'gender': gender,
+      'FirebaseId': FirebaseId,
     };
   }
 
@@ -47,6 +72,11 @@ class LoggedUser {
       firstname: map['firstname'] ?? '',
       lastname: map['lastname'] ?? '',
       imgUrl: map['imgUrl'] ?? '',
+      token: map['token'],
+      phone: map['phone'],
+      dob: map['dob'],
+      gender: map['gender'],
+      FirebaseId: map['FirebaseId'],
     );
   }
 
@@ -57,7 +87,7 @@ class LoggedUser {
 
   @override
   String toString() {
-    return 'LoggedUser(id: $id, username: $username, firstname: $firstname, lastname: $lastname, imgUrl: $imgUrl)';
+    return 'LoggedUser(id: $id, username: $username, firstname: $firstname, lastname: $lastname, imgUrl: $imgUrl, token: $token, phone: $phone, dob: $dob, gender: $gender, FirebaseId: $FirebaseId)';
   }
 
   @override
@@ -69,7 +99,12 @@ class LoggedUser {
         other.username == username &&
         other.firstname == firstname &&
         other.lastname == lastname &&
-        other.imgUrl == imgUrl;
+        other.imgUrl == imgUrl &&
+        other.token == token &&
+        other.phone == phone &&
+        other.dob == dob &&
+        other.gender == gender &&
+        other.FirebaseId == FirebaseId;
   }
 
   @override
@@ -78,6 +113,11 @@ class LoggedUser {
         username.hashCode ^
         firstname.hashCode ^
         lastname.hashCode ^
-        imgUrl.hashCode;
+        imgUrl.hashCode ^
+        token.hashCode ^
+        phone.hashCode ^
+        dob.hashCode ^
+        gender.hashCode ^
+        FirebaseId.hashCode;
   }
 }

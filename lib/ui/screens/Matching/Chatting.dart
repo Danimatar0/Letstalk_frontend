@@ -162,6 +162,11 @@ class ChatPageState extends State<ChatPage> {
   void onSendMessage(String content, int type) {
     if (content.trim().isNotEmpty) {
       textEditingController.clear();
+      // print('content : $content');
+      // print('type : $type');
+      // print('groupChatId : $groupChatId');
+      // print('currentUserId : $currentUserId');
+      // print('peerId : ${widget.arguments!.peerId}');
       chatProvider.sendMessage(
           content, type, groupChatId, currentUserId, widget.arguments!.peerId);
       listScrollController.animateTo(0,
@@ -744,6 +749,7 @@ class ChatPageState extends State<ChatPage> {
                   AsyncSnapshot<QuerySnapshot> snapshot) {
                 if (snapshot.hasData) {
                   listMessage = snapshot.data!.docs;
+                  print('list message size => ${listMessage.length}');
                   if (listMessage.length > 0) {
                     return ListView.builder(
                       padding: EdgeInsets.all(10),

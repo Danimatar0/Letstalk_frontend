@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:letstalk/core/constants/ColorConstants.dart';
 
 import 'package:provider/provider.dart';
 
 import '../../../core/providers/providers.dart';
 import '../Auth/LoginPage.dart';
-import '../Home/ChatsScreen.dart';
 
 class SplashPage extends StatefulWidget {
   SplashPage({Key? key}) : super(key: key);
@@ -27,17 +27,10 @@ class SplashPageState extends State<SplashPage> {
   void checkSignedIn() async {
     AuthProvider authProvider = context.read<AuthProvider>();
     bool isLoggedIn = await authProvider.isLoggedIn();
-    if (isLoggedIn) {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => ListingChatsPage()),
-      );
-      return;
-    }
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (context) => LandingPageMobile()),
-    );
+    if (isLoggedIn)
+      Get.toNamed('listchats');
+    else
+      Get.toNamed('login');
   }
 
   @override

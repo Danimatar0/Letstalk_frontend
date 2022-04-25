@@ -18,7 +18,9 @@ class AuthController extends GetxController {
   }
 
   void logout() {
+    LoggedUser currentUser = LoggedUser.fromJson(user);
+    String username = currentUser.username;
     clearUserInfo();
-    Get.toNamed('/Login');
+    Get.offAndToNamed('login', arguments: [true, username]);
   }
 }

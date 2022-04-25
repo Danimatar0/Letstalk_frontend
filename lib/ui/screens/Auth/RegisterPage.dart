@@ -6,6 +6,9 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
+import 'package:letstalk/core/models/LoggedUser.dart';
+import 'package:letstalk/core/models/User.dart';
+import 'package:letstalk/core/providers/providers.dart';
 import 'package:letstalk/utils/common.dart';
 import 'package:provider/provider.dart';
 import 'package:rflutter_alert/rflutter_alert.dart';
@@ -82,6 +85,7 @@ class _RegisterState extends State<Register> {
   DateTime selectedDate = DateTime.now();
   DateTime firstDate = DateTime(1922, 1);
   DateTime lastDate = DateTime(DateTime(DateTime.now().year).year + 100);
+  late AuthProvider _authProvider;
   @override
   void initState() {
     super.initState();
@@ -98,6 +102,7 @@ class _RegisterState extends State<Register> {
       if (kDebugMode) {
         print('fetched cuisines -> $fetchedCuisines');
       }
+      _authProvider = Provider.of<AuthProvider>(context, listen: false);
     });
   }
 
@@ -636,6 +641,7 @@ class _RegisterState extends State<Register> {
         'DOB': dob,
         'Password': password,
         'Gender': selectedGender,
+        'FirebaseId': generateRandomString(28),
         'Preference': prefObj
       };
       print('creating user $userObj..');
@@ -651,8 +657,20 @@ class _RegisterState extends State<Register> {
         _authController.isLoading.toggle();
         return;
       } else {
+        // dynamic userResponse = response['user'];
+        // LoggedUser user = LoggedUser(
+        //     id: userResponse['Id'],
+        //     username: userResponse['Email'],
+        //     firstname: userResponse['Firstname'],
+        //     lastname: userResponse['Lastname'],
+        //     imgUrl: userResponse['ImageUrl'],
+        //     token: response['token']);
+        // _authController.setUser(user);
+        // dynamic user = response['user'];
+        // print('user from response => $user');
+        // user['Id'] = generateRandomString(28);
+        // _authProvider.fetchFirebaseDocuments(user);
         _authController.isLoading.toggle();
-
         customAlert(
             context,
             translate(lang, context, 'alert.SuccessTitle'),
@@ -660,7 +678,7 @@ class _RegisterState extends State<Register> {
             AlertType.success,
             AnimationType.fromTop,
             Colors.green);
-        Get.offAllNamed('/match');
+        Get.offAllNamed('login');
       }
     }
   }

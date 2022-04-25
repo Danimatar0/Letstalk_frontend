@@ -29,6 +29,10 @@ apply plugin: 'com.google.gms.google-services'
 android {
     compileSdkVersion 31
 
+    lintOptions {
+          abortOnError false
+      }
+
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
@@ -66,6 +70,7 @@ flutter {
 
 dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
+    implementation platform('com.google.firebase:firebase-bom:29.3.1')
     implementation 'com.google.firebase:firebase-analytics'
 
 }

@@ -8,7 +8,10 @@ import 'package:flutter_advanced_drawer/flutter_advanced_drawer.dart';
 
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:get/get.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:letstalk/core/controllers/LoginController.dart';
+import 'package:letstalk/core/models/LoggedUser.dart';
 import 'package:letstalk/utils/styles.dart';
 import 'package:provider/provider.dart';
 
@@ -44,6 +47,7 @@ class ListingChatsPageState extends State<ListingChatsPage> {
   final GoogleSignIn googleSignIn = GoogleSignIn();
   final ScrollController listScrollController = ScrollController();
   final _advancedDrawerController = AdvancedDrawerController();
+
   void _handleMenuButtonPressed() {
     _advancedDrawerController.showDrawer();
   }
@@ -64,13 +68,17 @@ class ListingChatsPageState extends State<ListingChatsPage> {
     PopupChoices(title: 'Profile', icon: Icons.person),
     PopupChoices(title: 'Log out', icon: Icons.exit_to_app),
   ];
-
+  final _authController = Get.put(AuthController());
+  late LoggedUser user;
   @override
   void initState() {
     super.initState();
     authProvider = context.read<AuthProvider>();
     homeProvider = context.read<HomeProvider>();
-
+    setState(() {
+      user = LoggedUser.fromJson(_authController.user);
+    });
+    print('logged user ' + user.toString());
     if (authProvider.getUserFirebaseId()?.isNotEmpty == true) {
       currentUserId = authProvider.getUserFirebaseId()!;
     } else {
@@ -115,9 +123,9 @@ class ListingChatsPageState extends State<ListingChatsPage> {
 
   void configLocalNotification() {
     AndroidInitializationSettings initializationSettingsAndroid =
-        AndroidInitializationSettings('app_icon');
+        const AndroidInitializationSettings('app_icon');
     IOSInitializationSettings initializationSettingsIOS =
-        IOSInitializationSettings();
+        const IOSInitializationSettings();
     InitializationSettings initializationSettings = InitializationSettings(
         android: initializationSettingsAndroid, iOS: initializationSettingsIOS);
     flutterLocalNotificationsPlugin.initialize(initializationSettings);
@@ -314,29 +322,43 @@ class ListingChatsPageState extends State<ListingChatsPage> {
                   Expanded(
                     child: StreamBuilder<QuerySnapshot>(
                       stream: homeProvider.getStreamFireStore(
-                          FirestoreConstants.pathUserCollection,
-                          _limit,
-                          _textSearch),
+                        FirestoreConstants.pathUserCollection,
+                        _limit,
+                        _textSearch,
+                        iduserFrom: user.FirebaseId!,
+                      ),
                       builder: (BuildContext context,
                           AsyncSnapshot<QuerySnapshot> snapshot) {
                         if (snapshot.hasData) {
                           if ((snapshot.data?.docs.length ?? 0) > 0) {
                             return ListView.builder(
-                              padding: EdgeInsets.all(10),
+                              padding: const EdgeInsets.all(10),
                               itemBuilder: (context, index) => buildItem(
                                   context, snapshot.data?.docs[index]),
                               itemCount: snapshot.data?.docs.length,
                               controller: listScrollController,
                             );
                           } else {
-                            return Center(
-                              child: Text("No users"),
+                            return const Center(
+                              child: Text(
+                                "You don't have any chat yet",
+                                style: TextStyle(
+                                    color: ColorConstants.primaryColor),
+                              ),
                             );
                           }
+                        } else if (snapshot.connectionState ==
+                            ConnectionState.waiting) {
+                          return const Center(
+                            child: CircularProgressIndicator(
+                              color: ColorConstants.primaryColor,
+                            ),
+                          );
                         } else {
                           return Center(
-                            child: CircularProgressIndicator(
-                              color: ColorConstants.themeColor,
+                            child: Text(
+                              "You don't have any chat yet",
+                              style: TextStyle(color: BLUE_COLOR),
                             ),
                           );
                         }

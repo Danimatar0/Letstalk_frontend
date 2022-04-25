@@ -27,7 +27,7 @@ Future<dynamic> register(dynamic user) async {
 
 Future<dynamic> login(dynamic user) async {
   LoggedUser loggedUser;
-  final url = getIP() + "login";
+  final url = getIP() + "Auth/login";
   final response = await http
       .post(
     Uri.parse(url),
@@ -41,7 +41,27 @@ Future<dynamic> login(dynamic user) async {
     debugPrint("------------- ERROR ----------");
     debugPrint(error.toString());
   });
-  dynamic data = jsonDecode(response.body);
-
+  var data = {};
+  if (response.body.isNotEmpty) {
+    data = jsonDecode(response.body);
+  } else {
+    print('response body is empty');
+  }
   return data;
+}
+
+Future<dynamic> checkUserExistsLocally(String email, String token) async {
+  final url = getIP() + "Auth/checkUserExists/${email}";
+  final response = await http.get(
+    Uri.parse(url),
+    headers: <String, String>{
+      "Content-Encoding": "gzip",
+      'Content-Type': 'application/json; charset=UTF-8',
+      'Authorization': 'Bearer $token',
+    },
+  ).catchError((error) {
+    debugPrint("------------- ERROR ----------");
+    debugPrint(error.toString());
+  });
+  return jsonDecode(response.body);
 }

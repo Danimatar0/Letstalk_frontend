@@ -4,8 +4,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
+import 'package:letstalk/core/models/LoggedUser.dart';
 import 'package:letstalk/core/providers/AuthProvider.dart';
+import 'package:letstalk/core/services/AuthService.dart';
 import 'package:provider/src/provider.dart';
+import 'package:rflutter_alert/rflutter_alert.dart';
 import '../../../core/controllers/LoginController.dart';
 import '../../../core/internationalization/AppLanguage.dart';
 import '../../../core/providers/GoogleSignInProvider.dart';
@@ -22,13 +25,20 @@ class LandingPageMobile extends StatefulWidget {
 }
 
 class _LandingPageMobileState extends State<LandingPageMobile> {
+  String username = '';
+  String password = '';
+  bool showPassword = false;
+  final emailController = TextEditingController();
+  final passwordController = TextEditingController();
   @override
   Widget build(BuildContext context) {
+    bool autofillEmail = Get.arguments != null ? Get.arguments[0] : false;
+    String usernameArgs = Get.arguments != null ? Get.arguments[1] : '';
+    if (usernameArgs != '') emailController.text = usernameArgs;
+    var appLanguage = Provider.of<AppLanguage>(context);
     var width = MediaQuery.of(context).size.width;
     var height = MediaQuery.of(context).size.height;
     final _authController = Get.put(AuthController());
-    var appLanguage = Provider.of<AppLanguage>(context);
-
     final Shader linearGradient = const LinearGradient(
       colors: <Color>[
         // Color(0xFF4285F4),
@@ -115,6 +125,15 @@ class _LandingPageMobileState extends State<LandingPageMobile> {
                                               color: Colors.grey.shade200)),
                                     ),
                                     child: TextField(
+                                      controller: emailController,
+                                      onChanged: (value) {
+                                        if (value.isNotEmpty) {
+                                          setState(() {
+                                            username = value;
+                                          });
+                                          // print('us on change $username');
+                                        }
+                                      },
                                       decoration: InputDecoration(
                                           hintText: translate(appLanguage,
                                               context, 'placeholder.email'),
@@ -130,12 +149,32 @@ class _LandingPageMobileState extends State<LandingPageMobile> {
                                           bottom: BorderSide(
                                               color: Colors.grey.shade200)),
                                     ),
-                                    child: TextField(
+                                    child: TextFormField(
+                                      controller: passwordController,
+                                      autovalidateMode:
+                                          AutovalidateMode.onUserInteraction,
+                                      obscureText: !showPassword,
+                                      onChanged: (value) {
+                                        if (value.isNotEmpty && value != '') {
+                                          setState(() {
+                                            password = value;
+                                          });
+                                          // print('pass on change $password');
+                                        }
+                                      },
                                       decoration: InputDecoration(
+                                          suffixIcon: IconButton(
+                                              onPressed: () {
+                                                setState(() {
+                                                  showPassword = !showPassword;
+                                                });
+                                                print(showPassword);
+                                              },
+                                              icon: Icon(Icons.remove_red_eye)),
                                           hintText: translate(appLanguage,
                                               context, 'placeholder.password'),
-                                          hintStyle: const TextStyle(
-                                              color: Colors.grey),
+                                          hintStyle:
+                                              TextStyle(color: Colors.grey),
                                           border: InputBorder.none),
                                     ),
                                   ),
@@ -152,8 +191,56 @@ class _LandingPageMobileState extends State<LandingPageMobile> {
                                       appLanguage, context, 'drawer.login'),
                                   color: Colors.white,
                                   bgColor: PRIMARY_COLOR,
-                                  onTapCallBack: () {
-                                    print('loginn');
+                                  onTapCallBack: () async {
+                                    _authController.isLoading.toggle();
+                                    final provider = Provider.of<AuthProvider>(
+                                        context,
+                                        listen: false);
+                                    var req = {
+                                      'Email': username == ''
+                                          ? emailController.text == ''
+                                              ? ''
+                                              : emailController.text.trim()
+                                          : username.trim(),
+                                      'Password': password.trim()
+                                    };
+                                    var response = await login(req);
+                                    if (response == {} ||
+                                        response['statusCode'] == 401) {
+                                      _authController.isLoading.toggle();
+                                      customAlert(
+                                          context,
+                                          translate(appLanguage, context,
+                                              'alert.ErrorTitle'),
+                                          'Invalid username or password',
+                                          AlertType.error,
+                                          AnimationType.fromTop,
+                                          Colors.red);
+                                      return;
+                                    }
+                                    String token = response['token'] ?? '';
+                                    var userRes = response['user'];
+                                    // print('userRes $userRes');
+                                    LoggedUser loggedUser = LoggedUser(
+                                        id: userRes['id'] ?? -1,
+                                        username: userRes['email'] ?? '',
+                                        firstname: userRes['firstname'] ?? '',
+                                        lastname: userRes['lastname'] ?? '',
+                                        imgUrl: userRes['image'] ?? '',
+                                        phone: userRes['phoneNumber'] ?? '',
+                                        dob: userRes['dob'] ?? '',
+                                        gender: userRes['gender'] ?? '',
+                                        token: token,
+                                        FirebaseId:
+                                            userRes['firebaseId'] ?? '');
+                                    _authController.setUser(loggedUser);
+                                    _authController.isLoading.toggle();
+                                    // userRes['id'] = generateRandomString(28);
+                                    // print(userRes['id']);
+                                    Future.delayed(Duration.zero, () {
+                                      provider.initializeUserFirebase(userRes);
+                                    }).then(
+                                        (value) => Get.toNamed('/listchats'));
                                     // Get.toNamed('/match');
                                   }),
                             ),
@@ -199,9 +286,10 @@ class _LandingPageMobileState extends State<LandingPageMobile> {
                                                         listen: false);
                                                 bool isAuth = await provider
                                                     .handleSignIn();
-                                                    print('authenticated ? $isAuth');
+                                                print(
+                                                    'authenticated ? $isAuth');
                                                 if (isAuth)
-                                                  Get.toNamed('/home');
+                                                  Get.toNamed('/match');
                                               },
                                               leading: const Icon(
                                                 FontAwesomeIcons.google,
