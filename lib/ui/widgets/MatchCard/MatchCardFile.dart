@@ -2,9 +2,10 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:provider/provider.dart';
-
+import 'package:get/get.dart';
+import 'package:letstalk/core/controllers/MatchController.dart';
 import 'package:letstalk/utils/common.dart';
+import 'package:provider/provider.dart';
 
 import '../../../core/models/User.dart';
 import '../../../core/providers/CardProvider.dart';
@@ -14,15 +15,18 @@ class MatchCard extends StatefulWidget {
     Key? key,
     required this.user,
     required this.isFront,
+    required this.callBack,
   }) : super(key: key);
   final User user;
   final bool isFront;
+  final Function callBack;
 
   @override
   State<MatchCard> createState() => _MatchCardState();
 }
 
 class _MatchCardState extends State<MatchCard> {
+  final matchController = Get.put(MatchController());
   @override
   void initState() {
     super.initState();
@@ -30,6 +34,7 @@ class _MatchCardState extends State<MatchCard> {
       final size = MediaQuery.of(context).size;
       final cardProvider = Provider.of<CardProvider>(context, listen: false);
       cardProvider.setScreenSize(size);
+      if (widget.isFront) matchController.updateMatchee(widget.user.id);
     });
   }
 

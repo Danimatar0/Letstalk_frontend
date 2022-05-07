@@ -3,9 +3,14 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_advanced_drawer/flutter_advanced_drawer.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:get/get.dart';
 import 'package:iconsax/iconsax.dart';
+import 'package:letstalk/core/controllers/LoginController.dart';
+import 'package:letstalk/core/controllers/MatchController.dart';
 import 'package:letstalk/core/models/User.dart';
+import 'package:letstalk/core/services/UtilsService.dart';
 import 'package:letstalk/ui/widgets/AppBar/CustomAppBar.dart';
+import 'package:letstalk/utils/common.dart';
 import 'package:letstalk/utils/styles.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -24,13 +29,43 @@ class MatchingScreen extends StatefulWidget {
 class _MatchingScreenState extends State<MatchingScreen> {
   late SharedPreferences _prefs;
   late TextEditingController _textEditingController;
+  final _authController = Get.put(AuthController());
+  final matchController = Get.put(MatchController());
+  List users = [];
+  
   final _advancedDrawerController = AdvancedDrawerController();
   void _handleMenuButtonPressed() {
     _advancedDrawerController.showDrawer();
   }
 
+  void _handleLike(int idMatchee) async {
+    print('liking $idMatchee');
+    final cardProvider = Provider.of<CardProvider>(context, listen: false);
+    var matchDto = {
+      'User1': _authController.user['id'] ?? -1,
+      'User2': idMatchee
+    };
+    String token = getValueFromPath(_authController.user, 'token') ?? '';
+    var resp = await match(matchDto, token);
+    print('resp in handle match ==> $resp');
+    cardProvider.like();
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    Future.delayed(Duration.zero, () {
+      final localProvider = Provider.of<CardProvider>(context, listen: false);
+      setState(() {
+        users = localProvider.allUsers;
+      });
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
+    final provider = Provider.of<CardProvider>(context, listen: true);
+
     Widget buildLogo() => Row(
           children: [
             Image.asset(
@@ -73,10 +108,9 @@ class _MatchingScreenState extends State<MatchingScreen> {
                       globalPosition: Offset(0.0, 0.0),
                       localPosition: Offset(-3.0, 0.0)));
                   provider.endPosition();
-
-                  provider.like();
+                  provider.superLike();
                 },
-                child: Icon(Icons.star, color: Colors.blue, size: 40)),
+                child: Icon(Icons.favorite, color: Colors.teal, size: 40)),
             ElevatedButton(
                 onPressed: () {
                   final provider =
@@ -86,29 +120,25 @@ class _MatchingScreenState extends State<MatchingScreen> {
                       globalPosition: Offset(0.0, 0.0),
                       localPosition: Offset(-3.0, 0.0)));
                   provider.endPosition();
-                  provider.superLike();
+
+                  _handleLike(matchController.idMatchee.value);
                 },
-                child: Icon(Icons.favorite, color: Colors.teal, size: 40)),
+                child: Icon(Icons.star, color: Colors.blue, size: 40)),
           ],
         );
 
     Widget buildCards() {
-      final provider = Provider.of<CardProvider>(context, listen: true);
-      final users = provider.allUsers;
-
+      ///users is a list of users having the same preference(cuisine) as the logged in user
       return users.isEmpty
           ? Center(
-              child: ElevatedButton(
-                  onPressed: () {
-                    provider.resetUsers();
-                  },
-                  child:
-                      Text('Restart', style: TextStyle(color: Colors.black))))
+              child: const Text(
+                  'No users left to match with.. Please wait for some time'))
           : Stack(
               children: users
                   .map((u) => MatchCard(
                         user: u,
                         isFront: users.last == u,
+                        callBack: () {},
                       ))
                   .toList());
     }

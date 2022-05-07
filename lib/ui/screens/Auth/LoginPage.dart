@@ -5,6 +5,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 import 'package:letstalk/core/models/LoggedUser.dart';
+import 'package:letstalk/core/models/Preference.dart';
 import 'package:letstalk/core/providers/AuthProvider.dart';
 import 'package:letstalk/core/services/AuthService.dart';
 import 'package:provider/src/provider.dart';
@@ -220,7 +221,12 @@ class _LandingPageMobileState extends State<LandingPageMobile> {
                                     }
                                     String token = response['token'] ?? '';
                                     var userRes = response['user'];
-                                    // print('userRes $userRes');
+                                    print('userRes $userRes');
+                                    List<Preference> userPrefs = [];
+                                    (userRes['userPreferences'] as List)
+                                        .forEach((pref) {
+                                          
+                                        });
                                     LoggedUser loggedUser = LoggedUser(
                                         id: userRes['id'] ?? -1,
                                         username: userRes['email'] ?? '',
@@ -231,16 +237,16 @@ class _LandingPageMobileState extends State<LandingPageMobile> {
                                         dob: userRes['dob'] ?? '',
                                         gender: userRes['gender'] ?? '',
                                         token: token,
-                                        FirebaseId:
-                                            userRes['firebaseId'] ?? '');
+                                        FirebaseId: userRes['firebaseId'] ?? '',
+                                        preferences:
+                                            userRes['userPreferences'] ?? []);
                                     _authController.setUser(loggedUser);
                                     _authController.isLoading.toggle();
                                     // userRes['id'] = generateRandomString(28);
                                     // print(userRes['id']);
                                     Future.delayed(Duration.zero, () {
                                       provider.initializeUserFirebase(userRes);
-                                    }).then(
-                                        (value) => Get.toNamed('/listchats'));
+                                    }).then((value) => Get.toNamed('/match'));
                                     // Get.toNamed('/match');
                                   }),
                             ),

@@ -60,22 +60,22 @@ class GoogleSignInProvider extends ChangeNotifier {
         print('successfully logged in with user ${authCred.user}');
         List<String> fullname =
             authCred.user!.displayName.toString().split(" ");
-        var user = await checkUserExistsLocally(
-            authCred.user!.email!, googleAuth.accessToken!);
-        if (user.status == 404) {
-          var userObj = {
-            'Firstname': fullname[0],
-            'Lastname': fullname[1],
-            'Email': authCred.user!.email!,
-            'Phone': authCred.user!.phoneNumber,
-            'DOB': '',
-            'Password': generateRandomString(28),
-            'Gender': '',
-            'FirebaseId': authCred.user!.uid,
-            'Preference': Null
-          };
-          register(userObj);
-        }
+        // var user = await checkUserExistsLocally(
+        //     authCred.user!.email!, googleAuth.accessToken!);
+        // if (user.status == 404) {
+        //   var userObj = {
+        //     'Firstname': fullname[0],
+        //     'Lastname': fullname[1],
+        //     'Email': authCred.user!.email!,
+        //     'Phone': authCred.user!.phoneNumber,
+        //     'DOB': '',
+        //     'Password': generateRandomString(28),
+        //     'Gender': '',
+        //     'FirebaseId': authCred.user!.uid,
+        //     'Preference': Null
+        //   };
+        //   register(userObj);
+        // }
 
         LoggedUser loggedUser = LoggedUser(
           id: -1,

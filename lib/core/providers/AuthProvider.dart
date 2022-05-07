@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:letstalk/core/services/AuthService.dart';
+import '../../utils/common.dart';
 import '../constants/constants.dart';
 import '../controllers/LoginController.dart';
 import '../models/LoggedUser.dart';
@@ -138,12 +139,28 @@ class AuthProvider extends ChangeNotifier {
         accessToken: googleAuth.accessToken,
         idToken: googleAuth.idToken,
       );
-      // print(credential);
       User? firebaseUser =
           (await firebaseAuth.signInWithCredential(credential)).user;
       // print(firebaseUser);
       if (firebaseUser != null) {
         List<String> fullName = firebaseUser.displayName.toString().split(" ");
+        var checkUser = await checkUserExistsLocally(
+            firebaseUser.email!, googleAuth.accessToken!);
+        if (checkUser.status == 404) {
+          var userObj = {
+            'Firstname': fullName[0],
+            'Lastname': fullName[1],
+            'Email': firebaseUser.email!,
+            'Phone': firebaseUser.phoneNumber,
+            'DOB': '',
+            'Password': generateRandomString(28),
+            'Gender': '',
+            'FirebaseId': firebaseUser.uid,
+            'Preference': Null
+          };
+          register(userObj);
+        }
+
         LoggedUser loggedUser = LoggedUser(
             id: -1,
             username: firebaseUser.email!,
