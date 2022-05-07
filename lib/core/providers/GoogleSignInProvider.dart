@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:ffi';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_sign_in/google_sign_in.dart';
@@ -6,8 +7,10 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 
+import '../../utils/common.dart';
 import '../controllers/LoginController.dart';
 import '../models/LoggedUser.dart';
+import '../services/AuthService.dart';
 
 class GoogleSignInProvider extends ChangeNotifier {
   final googleSignIn = GoogleSignIn(scopes: [
@@ -57,12 +60,31 @@ class GoogleSignInProvider extends ChangeNotifier {
         print('successfully logged in with user ${authCred.user}');
         List<String> fullname =
             authCred.user!.displayName.toString().split(" ");
+        var user = await checkUserExistsLocally(
+            authCred.user!.email!, googleAuth.accessToken!);
+        if (user.status == 404) {
+          var userObj = {
+            'Firstname': fullname[0],
+            'Lastname': fullname[1],
+            'Email': authCred.user!.email!,
+            'Phone': authCred.user!.phoneNumber,
+            'DOB': '',
+            'Password': generateRandomString(28),
+            'Gender': '',
+            'FirebaseId': authCred.user!.uid,
+            'Preference': Null
+          };
+          register(userObj);
+        }
+
         LoggedUser loggedUser = LoggedUser(
           id: -1,
           username: authCred.user!.email!,
           firstname: fullname[0],
           lastname: fullname[1],
           imgUrl: authCred.user!.photoURL!,
+          preferences: [],
+          FirebaseId: authCred.user!.uid,
         );
         _authController.setUser(loggedUser);
         prefs.setBool('isAuthenticated', true);
