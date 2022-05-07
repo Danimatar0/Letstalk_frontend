@@ -86,6 +86,7 @@ class _RegisterState extends State<Register> {
   DateTime firstDate = DateTime(1922, 1);
   DateTime lastDate = DateTime(DateTime(DateTime.now().year).year + 100);
   late AuthProvider _authProvider;
+  EdgeInsets _scrollPading = EdgeInsets.only(bottom: 0);
   @override
   void initState() {
     super.initState();
@@ -128,6 +129,8 @@ class _RegisterState extends State<Register> {
           borderRadius: BorderRadius.circular(10),
         ),
         child: SingleChildScrollView(
+          reverse: true,
+          keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
           child: Column(
             children: [
               //#Firstname
@@ -139,12 +142,13 @@ class _RegisterState extends State<Register> {
                 ),
                 child: TextFormField(
                   autovalidateMode: AutovalidateMode.onUserInteraction,
+                  scrollPadding: _scrollPading,
                   toolbarOptions: ToolbarOptions(
                       copy: true, paste: true, selectAll: true, cut: true),
                   onChanged: (value) {
                     if (value.isNotEmpty && value != '') {
                       setState(() {
-                        firstname = value;
+                        firstname = value.trim();
                       });
                     }
                   },
@@ -166,13 +170,14 @@ class _RegisterState extends State<Register> {
                       Border(bottom: BorderSide(color: Colors.grey.shade200)),
                 ),
                 child: TextFormField(
+                  scrollPadding: _scrollPading,
                   autovalidateMode: AutovalidateMode.onUserInteraction,
                   toolbarOptions: ToolbarOptions(
                       copy: true, paste: true, selectAll: true, cut: true),
                   onChanged: (value) {
                     if (value.isNotEmpty && value != '') {
                       setState(() {
-                        lastname = value;
+                        lastname = value.trim();
                       });
                     }
                   },
@@ -194,6 +199,7 @@ class _RegisterState extends State<Register> {
                       Border(bottom: BorderSide(color: Colors.grey.shade200)),
                 ),
                 child: TextFormField(
+                  scrollPadding: _scrollPading,
                   autovalidateMode: AutovalidateMode.onUserInteraction,
                   keyboardType: TextInputType.emailAddress,
                   toolbarOptions: ToolbarOptions(
@@ -201,7 +207,7 @@ class _RegisterState extends State<Register> {
                   onChanged: (value) {
                     if (value.isNotEmpty && value != '') {
                       setState(() {
-                        email = value;
+                        email = value.trim();
                       });
                     }
                   },
@@ -225,6 +231,7 @@ class _RegisterState extends State<Register> {
                       Border(bottom: BorderSide(color: Colors.grey.shade200)),
                 ),
                 child: TextFormField(
+                  scrollPadding: _scrollPading,
                   autovalidateMode: AutovalidateMode.onUserInteraction,
                   inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                   keyboardType: TextInputType.phone,
@@ -233,7 +240,7 @@ class _RegisterState extends State<Register> {
                   onChanged: (value) {
                     if (value.isNotEmpty && value != '') {
                       setState(() {
-                        phone = value;
+                        phone = value.trim();
                       });
                     }
                   },
@@ -320,12 +327,13 @@ class _RegisterState extends State<Register> {
                       Border(bottom: BorderSide(color: Colors.grey.shade200)),
                 ),
                 child: TextFormField(
+                  scrollPadding: _scrollPading,
                   autovalidateMode: AutovalidateMode.onUserInteraction,
                   obscureText: !showPlainPasswd,
                   onChanged: (value) {
                     if (value.isNotEmpty && value != '') {
                       setState(() {
-                        password = value;
+                        password = value.trim();
                       });
                     }
                   },
@@ -352,12 +360,13 @@ class _RegisterState extends State<Register> {
                       Border(bottom: BorderSide(color: Colors.grey.shade200)),
                 ),
                 child: TextFormField(
+                  scrollPadding: _scrollPading,
                   autovalidateMode: AutovalidateMode.onUserInteraction,
                   obscureText: !showPlainConfirmPasswd,
                   onChanged: (value) {
                     if (value.isNotEmpty && value != '') {
                       setState(() {
-                        confirmpassword = value;
+                        confirmpassword = value.trim();
                       });
                     }
                   },
@@ -689,11 +698,13 @@ class _RegisterState extends State<Register> {
     _controller.addListener(() {
       setState(() {
         currentPage = _controller.page!.round();
+        _scrollPading = EdgeInsets.only(
+            bottom: MediaQuery.of(context).viewInsets.bottom + 5);
       });
       // print('current page : $currentPage');
     });
     return Scaffold(
-        resizeToAvoidBottomInset: false,
+        resizeToAvoidBottomInset: true,
         body: Obx(() => _authController.isLoading.isTrue
             ? Center(child: CircularProgressIndicator(color: Colors.purple))
             : Container(

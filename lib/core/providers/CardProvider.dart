@@ -1,10 +1,15 @@
 import 'package:flutter/cupertino.dart';
+import 'package:get/get.dart';
+import 'package:letstalk/core/controllers/LoginController.dart';
+import 'package:letstalk/core/services/UtilsService.dart';
+import 'package:letstalk/utils/common.dart';
 
 import '../models/User.dart';
 
 enum CardStatus { like, dislike, superLike }
 
 class CardProvider extends ChangeNotifier {
+  final authController = Get.put(AuthController());
   Offset _position = Offset.zero;
   bool _isDragging = false;
   Size _screenSize = Size.zero;
@@ -19,7 +24,9 @@ class CardProvider extends ChangeNotifier {
   List<User> get allUsers => _allUsers;
 
   CardProvider() {
-    resetUsers();
+    int idPref = -1;
+    // String token = getValueFromPath(authController.user,'token');
+    resetUsers(idPref,"");
   }
 
   void setScreenSize(Size s) {
@@ -78,8 +85,9 @@ class CardProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  void resetUsers() {
+  void resetUsers(int prefId, String token) async {
     print('resetting users');
+    List tmp = await getUsersByPreferenceId(prefId, token);
     _allUsers = <User>[
       User(
           id: 1,

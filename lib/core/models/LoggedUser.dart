@@ -1,5 +1,8 @@
 import 'dart:convert';
 
+import 'package:flutter/foundation.dart';
+import 'package:letstalk/core/models/Preference.dart';
+
 class LoggedUser {
   int id;
   String username;
@@ -11,6 +14,7 @@ class LoggedUser {
   String? dob;
   String? gender;
   String? FirebaseId;
+  List<Preference>? preferences;
   LoggedUser({
     required this.id,
     required this.username,
@@ -22,6 +26,7 @@ class LoggedUser {
     this.dob,
     this.gender,
     this.FirebaseId,
+    this.preferences,
   });
 
   LoggedUser copyWith({
@@ -35,6 +40,7 @@ class LoggedUser {
     String? dob,
     String? gender,
     String? FirebaseId,
+    List<Preference>? preferences,
   }) {
     return LoggedUser(
       id: id ?? this.id,
@@ -47,6 +53,7 @@ class LoggedUser {
       dob: dob ?? this.dob,
       gender: gender ?? this.gender,
       FirebaseId: FirebaseId ?? this.FirebaseId,
+      preferences: preferences ?? this.preferences,
     );
   }
 
@@ -62,6 +69,7 @@ class LoggedUser {
       'dob': dob,
       'gender': gender,
       'FirebaseId': FirebaseId,
+      'preferences': preferences?.map((x) => x.toMap()).toList(),
     };
   }
 
@@ -77,6 +85,10 @@ class LoggedUser {
       dob: map['dob'],
       gender: map['gender'],
       FirebaseId: map['FirebaseId'],
+      preferences: map['preferences'] != null
+          ? List<Preference>.from(
+              map['preferences']?.map((x) => Preference.fromMap(x)))
+          : null,
     );
   }
 
@@ -87,7 +99,7 @@ class LoggedUser {
 
   @override
   String toString() {
-    return 'LoggedUser(id: $id, username: $username, firstname: $firstname, lastname: $lastname, imgUrl: $imgUrl, token: $token, phone: $phone, dob: $dob, gender: $gender, FirebaseId: $FirebaseId)';
+    return 'LoggedUser(id: $id, username: $username, firstname: $firstname, lastname: $lastname, imgUrl: $imgUrl, token: $token, phone: $phone, dob: $dob, gender: $gender, FirebaseId: $FirebaseId, preferences: $preferences)';
   }
 
   @override
@@ -104,7 +116,8 @@ class LoggedUser {
         other.phone == phone &&
         other.dob == dob &&
         other.gender == gender &&
-        other.FirebaseId == FirebaseId;
+        other.FirebaseId == FirebaseId &&
+        listEquals(other.preferences, preferences);
   }
 
   @override
@@ -118,6 +131,7 @@ class LoggedUser {
         phone.hashCode ^
         dob.hashCode ^
         gender.hashCode ^
-        FirebaseId.hashCode;
+        FirebaseId.hashCode ^
+        preferences.hashCode;
   }
 }

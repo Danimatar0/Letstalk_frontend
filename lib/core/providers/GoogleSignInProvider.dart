@@ -58,12 +58,12 @@ class GoogleSignInProvider extends ChangeNotifier {
         List<String> fullname =
             authCred.user!.displayName.toString().split(" ");
         LoggedUser loggedUser = LoggedUser(
-          id: -1,
-          username: authCred.user!.email!,
-          firstname: fullname[0],
-          lastname: fullname[1],
-          imgUrl: authCred.user!.photoURL!,
-        );
+            id: -1,
+            username: authCred.user!.email!,
+            firstname: fullname[0],
+            lastname: fullname[1],
+            imgUrl: authCred.user!.photoURL!,
+            preferences: []);
         _authController.setUser(loggedUser);
         prefs.setBool('isAuthenticated', true);
         prefs.setString('username', authCred.user!.email!);
