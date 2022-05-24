@@ -35,6 +35,8 @@ class ChatProvider extends ChangeNotifier {
         .update(dataNeedUpdate);
   }
 
+  ///This function will return the user's chat data from firestore
+  ///It takes [groupChatId] & [limit] as parameters
   Stream<QuerySnapshot> getChatStream(String groupChatId, int limit) {
     return firebaseFirestore
         .collection(FirestoreConstants.pathMessageCollection)

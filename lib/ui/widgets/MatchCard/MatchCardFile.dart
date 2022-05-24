@@ -41,10 +41,19 @@ class _MatchCardState extends State<MatchCard> {
   @override
   Widget build(BuildContext context) {
     int getUserAge(String currDate, String dob) {
-      var date = DateTime.parse(currDate);
+      currDate = currDate.split(" ")[0];
+      dob = '${dob.split("-")[2]}-${dob.split("-")[1]}-${dob.split("-")[0]}';
+      String year = currDate.split('-')[0];
+      String month = currDate.split('-')[1];
+      String day = currDate.split('-')[2];
+      String dateToFormat = '$year-$month-$day';
+      var date = DateTime.parse(dateToFormat);
       var dobDate = DateTime.parse(dob);
       var diff = date.difference(dobDate);
+      // print('dtf $date');
+      // print('dob date $dobDate');
       var age = diff.inDays / 365;
+      // print('user age $age');
       return age.round();
     }
 
@@ -93,10 +102,12 @@ class _MatchCardState extends State<MatchCard> {
           borderRadius: BorderRadius.circular(20),
           child: Container(
               decoration: BoxDecoration(
-                  image: DecorationImage(
-                      image: NetworkImage(widget.user.avatar),
-                      fit: BoxFit.cover,
-                      alignment: Alignment(-0.3, 0))),
+                  image: widget.user.avatar == ''
+                      ? null
+                      : DecorationImage(
+                          image: NetworkImage(widget.user.avatar),
+                          fit: BoxFit.cover,
+                          alignment: Alignment(-0.3, 0))),
               child: Container(
                 decoration: const BoxDecoration(
                     gradient: LinearGradient(

@@ -241,3 +241,23 @@ String generateRandomString(int length) {
   return String.fromCharCodes(Iterable.generate(
       length, (_) => _chars.codeUnitAt(_rnd.nextInt(_chars.length))));
 }
+
+String? validatePassword(String value, bool isConfirmation,
+    {String? confirmationPassword}) {
+  RegExp regex =
+      RegExp(r'^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[!@#\$&*~]).{8,}$');
+  if (value.isEmpty) {
+    return 'Please enter password';
+  } else {
+    if (!regex.hasMatch(value)) {
+      return 'Enter valid password';
+    }
+    if (isConfirmation) {
+      if (value != confirmationPassword) {
+        return 'Passwords do not match';
+      }
+    } else {
+      return null;
+    }
+  }
+}

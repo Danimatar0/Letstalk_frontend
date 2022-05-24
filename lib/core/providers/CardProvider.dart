@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
 import 'package:letstalk/core/controllers/LoginController.dart';
+import 'package:letstalk/core/models/LoggedUser.dart';
 import 'package:letstalk/core/services/UtilsService.dart';
 import 'package:letstalk/utils/common.dart';
 
@@ -15,7 +16,13 @@ class CardProvider extends ChangeNotifier {
   Size _screenSize = Size.zero;
   double _angle = 0;
   List<User> _allUsers = [];
-
+  LoggedUser currentUser = new LoggedUser(
+      id: -1,
+      username: 'username',
+      firstname: 'firstname',
+      lastname: 'lastname',
+      imgUrl: 'imgUrl',
+      preferences: []);
   //--------------//
   Offset get position => _position;
   bool get isDragging => _isDragging;
@@ -23,10 +30,10 @@ class CardProvider extends ChangeNotifier {
   double get angle => _angle;
   List<User> get allUsers => _allUsers;
 
-  CardProvider() {
-    int idPref = -1;
-    // String token = getValueFromPath(authController.user,'token');
-    resetUsers(idPref,"");
+  void initializeUsers() {
+    currentUser = LoggedUser.fromJson(authController.user);
+    // print(currentUser.token!);
+    resetUsers(currentUser.token ?? "");
   }
 
   void setScreenSize(Size s) {
@@ -85,52 +92,31 @@ class CardProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  void resetUsers(int prefId, String token) async {
+  void resetUsers(String token) async {
     print('resetting users');
-    List tmp = await getUsersByPreferenceId(prefId, token);
-    _allUsers = <User>[
-      User(
-          id: 1,
-          firstname: 'Dani',
-          lastname: 'Matar',
-          email: 'dani.matar@gmail.com',
-          phone: '+96101010101',
-          avatar:
-              'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxzZWFyY2h8M3x8cmFuZG9tJTIwcGVvcGxlfGVufDB8fDB8fA%3D%3D&auto=format&fit=crop&w=1000&q=60',
-          about: 'Helloo',
-          dob: '2000-05-05'),
-      User(
-          id: 2,
-          firstname: 'Mona',
-          lastname: 'Jefferson',
-          email: 'toni.matar@gmail.com',
-          phone: '+96101010101',
-          avatar:
-              'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxzZWFyY2h8MXx8cmFuZG9tJTIwcGVvcGxlfGVufDB8fDB8fA%3D%3D&auto=format&fit=crop&w=1000&q=60',
-          about: 'Helloo',
-          dob: '2000-05-05'),
-      User(
-          id: 3,
-          firstname: 'Alex',
-          lastname: 'Kardashoan',
-          email: 'alex.kard@gmail.com',
-          phone: '+96101010101',
-          avatar:
-              'https://images.unsplash.com/file-1646172372557-6258c0de0873image',
-          about: 'Helloo',
-          dob: '2000-05-05'),
-      User(
-          id: 4,
-          firstname: 'Toni',
-          lastname: 'Matar',
-          email: 'mona.deff@gmail.com',
-          phone: '+96101010101',
-          avatar:
-              'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxzZWFyY2h8NXx8cmFuZG9tJTIwcGVvcGxlfGVufDB8fDB8fA%3D%3D&auto=format&fit=crop&w=1000&q=60',
-          about: 'Helloo',
-          dob: '2000-05-05')
-    ].reversed.toList();
+    List tmp = await getUsersByPreferenceId(currentUser.id, token);
+    // print('tmpppp $tmp');
+    List<User> listusers = [];
+    tmp.forEach((e) {
+      // print('e --> $e');
+      // print('curr id ${currentUser.id}');
+      // bool samePerson = e['id'] == currentUser.id ? true : false;
+      // print('same person ? $samePerson');
+      // if (!samePerson) {
+      listusers.add(User(
+          id: e['id'] ?? -1,
+          firstname: e['firstname'] ?? '',
+          lastname: e['lastname'] ?? '',
+          email: e['email'] ?? '',
+          phone: e['phoneNumber'] ?? '',
+          avatar: e['image'] ?? '',
+          about: '',
+          dob: e['dob'] ?? ''));
+      // }
+    });
+    _allUsers = listusers.reversed.toList();
     notifyListeners();
+    print('all userss -> $_allUsers');
   }
 
   CardStatus? getStatus() {

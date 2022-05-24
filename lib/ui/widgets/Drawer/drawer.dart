@@ -6,6 +6,7 @@ import 'package:letstalk/core/providers/providers.dart';
 import 'package:letstalk/utils/common.dart';
 import 'package:letstalk/utils/styles.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../core/controllers/LoginController.dart';
 import '../../../core/models/LoggedUser.dart';
@@ -20,6 +21,10 @@ class DrawerWidget extends StatelessWidget {
     LoggedUser currentUser = LoggedUser.fromJson(_authController.user);
     var googleProvider = Provider.of<AuthProvider>(context, listen: false);
     var appLanguage = Provider.of<AppLanguage>(context);
+    SharedPreferences? prefs;
+    Future.delayed(Duration.zero, () async {
+      prefs = await SharedPreferences.getInstance();
+    });
     return SafeArea(
       child: Container(
         padding: const EdgeInsets.only(top: 20),
@@ -110,7 +115,8 @@ class DrawerWidget extends StatelessWidget {
                 child: ListTile(
                   onTap: () {
                     // _authController.isLoading.toggle();
-                    if (currentUser.id == -1)
+
+                    if (prefs!.getString("provider") == "google")
                       googleProvider.handleSignOut();
                     else
                       _authController.logout();
@@ -122,7 +128,7 @@ class DrawerWidget extends StatelessWidget {
                   leading: IconButton(
                       onPressed: () {
                         // _authController.isLoading.toggle();
-                        if (currentUser.id == -1)
+                        if (prefs!.getString("provider") == "google")
                           googleProvider.handleSignOut();
                         else
                           _authController.logout();

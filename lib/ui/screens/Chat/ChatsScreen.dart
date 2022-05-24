@@ -12,6 +12,7 @@ import 'package:get/get.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:letstalk/core/controllers/LoginController.dart';
 import 'package:letstalk/core/models/LoggedUser.dart';
+import 'package:letstalk/core/services/UtilsService.dart';
 import 'package:letstalk/utils/styles.dart';
 import 'package:provider/provider.dart';
 
@@ -70,6 +71,7 @@ class ListingChatsPageState extends State<ListingChatsPage> {
   ];
   final _authController = Get.put(AuthController());
   late LoggedUser user;
+
   @override
   void initState() {
     super.initState();
@@ -151,25 +153,23 @@ class ListingChatsPageState extends State<ListingChatsPage> {
   }
 
   void showNotification(RemoteNotification remoteNotification) async {
-    AndroidNotificationDetails androidPlatformChannelSpecifics =
+    const AndroidNotificationDetails androidPlatformChannelSpecifics =
         AndroidNotificationDetails(
-      Platform.isAndroid
-          ? 'com.dfa.flutterchatdemo'
-          : 'com.duytq.flutterchatdemo',
-      'Flutter chat demo',
+      'com.example.letstalk',
+      'Let\'s Talk',
       channelDescription: 'your channel description',
       playSound: true,
       enableVibration: true,
       importance: Importance.max,
       priority: Priority.high,
     );
-    IOSNotificationDetails iOSPlatformChannelSpecifics =
+    const IOSNotificationDetails iOSPlatformChannelSpecifics =
         IOSNotificationDetails();
-    NotificationDetails platformChannelSpecifics = NotificationDetails(
+    const NotificationDetails platformChannelSpecifics = NotificationDetails(
         android: androidPlatformChannelSpecifics,
         iOS: iOSPlatformChannelSpecifics);
 
-    print(remoteNotification);
+    debugPrint(remoteNotification.title);
 
     await flutterLocalNotificationsPlugin.show(
       0,
@@ -321,49 +321,69 @@ class ListingChatsPageState extends State<ListingChatsPage> {
                   buildSearchBar(),
                   Expanded(
                     child: StreamBuilder<QuerySnapshot>(
-                      stream: homeProvider.getStreamFireStore(
-                        FirestoreConstants.pathUserCollection,
-                        _limit,
-                        _textSearch,
-                        iduserFrom: user.FirebaseId!,
-                      ),
-                      builder: (BuildContext context,
-                          AsyncSnapshot<QuerySnapshot> snapshot) {
-                        if (snapshot.hasData) {
-                          if ((snapshot.data?.docs.length ?? 0) > 0) {
-                            return ListView.builder(
-                              padding: const EdgeInsets.all(10),
-                              itemBuilder: (context, index) => buildItem(
-                                  context, snapshot.data?.docs[index]),
-                              itemCount: snapshot.data?.docs.length,
-                              controller: listScrollController,
+                        stream: homeProvider.getStreamFireStore(
+                          FirestoreConstants.pathUserCollection,
+                          _limit,
+                          _textSearch,
+                          iduserFrom: user.FirebaseId!,
+                        ),
+                        builder: (BuildContext context,
+                            AsyncSnapshot<QuerySnapshot> snapshot) {
+                          if (snapshot.hasData) {
+                            // if ((snapshot.data?.docs.length ?? 0) > 0) {
+                            List<DocumentSnapshot<Object?>> matchingUsers = [];
+                            //Check if match logic here
+                            bool isMatch = false;
+                            RxBool isLoading = RxBool(true);
+                            snapshot.data?.docs.forEach((element) async {
+                              isMatch =
+                                  await checkIfMatch(user.id, element['id']);
+                              if (isMatch) {
+                                // debugPrint('it\'s a match !!');
+                                // print('adding ${element['id']}');
+                                matchingUsers.add(element);
+                              }
+                            });
+                            Future.delayed(
+                              Duration(seconds: 1),
+                            ).then((value) {
+                              isLoading.toggle();
+                            });
+                            return Obx(() => isLoading.isTrue
+                                ? const Center(
+                                    child: CircularProgressIndicator(),
+                                  )
+                                : matchingUsers.isEmpty
+                                    ? const Center(
+                                        child: Text(
+                                          "You don't have any chat yet",
+                                          style: TextStyle(
+                                              color:
+                                                  ColorConstants.primaryColor),
+                                        ),
+                                      )
+                                    : ListView.builder(
+                                        padding: const EdgeInsets.all(10),
+                                        itemBuilder: (context, index) =>
+                                            buildItem(
+                                                context, matchingUsers[index]),
+                                        itemCount: matchingUsers.length,
+                                        controller: listScrollController,
+                                      ));
+                          } else if (snapshot.connectionState ==
+                              ConnectionState.waiting) {
+                            return const Center(
+                              child: CircularProgressIndicator(),
                             );
                           } else {
-                            return const Center(
+                            return Center(
                               child: Text(
                                 "You don't have any chat yet",
-                                style: TextStyle(
-                                    color: ColorConstants.primaryColor),
+                                style: TextStyle(color: BLUE_COLOR),
                               ),
                             );
                           }
-                        } else if (snapshot.connectionState ==
-                            ConnectionState.waiting) {
-                          return const Center(
-                            child: CircularProgressIndicator(
-                              color: ColorConstants.primaryColor,
-                            ),
-                          );
-                        } else {
-                          return Center(
-                            child: Text(
-                              "You don't have any chat yet",
-                              style: TextStyle(color: BLUE_COLOR),
-                            ),
-                          );
-                        }
-                      },
-                    ),
+                        }),
                   ),
                 ],
               ),
@@ -473,7 +493,7 @@ class ListingChatsPageState extends State<ListingChatsPage> {
     if (document != null) {
       UserChat userChat = UserChat.fromDocument(document);
       if (userChat.id == currentUserId) {
-        return SizedBox.shrink();
+        return const SizedBox.shrink();
       } else {
         return Container(
           child: TextButton(

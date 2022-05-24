@@ -4,14 +4,19 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:geocoding/geocoding.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
+import 'package:intl_phone_number_input/intl_phone_number_input.dart';
+import 'package:provider/provider.dart';
+import 'package:rflutter_alert/rflutter_alert.dart';
+
 import 'package:letstalk/core/models/LoggedUser.dart';
 import 'package:letstalk/core/models/User.dart';
 import 'package:letstalk/core/providers/providers.dart';
+import 'package:letstalk/core/services/LocationService.dart';
 import 'package:letstalk/utils/common.dart';
-import 'package:provider/provider.dart';
-import 'package:rflutter_alert/rflutter_alert.dart';
 
 import '../../../core/controllers/LoginController.dart';
 import '../../../core/internationalization/AppLanguage.dart';
@@ -22,6 +27,83 @@ import '../../../utils/styles.dart';
 import '../../widgets/CustomButton/CustomButton.dart';
 
 enum Genders { Male, Female, Others }
+
+class RequestLocationWidget extends StatelessWidget {
+  const RequestLocationWidget({
+    Key? key,
+    required this.width,
+    required this.height,
+    this.bgColor,
+    this.textColor,
+    required this.callback,
+  }) : super(key: key);
+  final double width;
+  final double height;
+  final Color? bgColor;
+  final Color? textColor;
+  final Function callback;
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Center(
+        child: Container(
+            decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(
+                  color: Colors.grey,
+                  width: 1,
+                ),
+                color: bgColor ?? Colors.purple,
+                boxShadow: [
+                  BoxShadow(
+                      color: Color.fromRGBO(171, 171, 171, .7),
+                      blurRadius: 20,
+                      offset: Offset(0, 10)),
+                ]),
+            alignment: Alignment.center,
+            height: height,
+            width: width,
+            child: Column(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Container(
+                    padding: EdgeInsets.all(2),
+                    child: Text(
+                      'ACCESS YOUR LOCATION',
+                      style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: textColor ?? Colors.white),
+                    ),
+                  ),
+                  Icon(
+                    Icons.location_pin,
+                    color: Colors.white,
+                    size: 60,
+                  ),
+                  Container(
+                    padding: EdgeInsets.all(2),
+                    width: 200,
+                    child: Text(
+                      'We need your location to show you the best matches',
+                      style: TextStyle(
+                          fontSize: 15, color: textColor ?? Colors.white),
+                    ),
+                  ),
+                  Container(
+                    height: 50,
+                    child: CustomButton(
+                      color: Colors.purple,
+                      title: 'ENABLE ACCESS',
+                      onTapCallBack: () => callback(),
+                    ),
+                  ),
+                ])),
+      ),
+    );
+  }
+}
 
 class Register extends StatefulWidget {
   Register({Key? key}) : super(key: key);
@@ -51,30 +133,12 @@ class _RegisterState extends State<Register> {
   List selectedCuisines = [];
   List fetchedCuisines = [];
   var selectedCuisine = {};
+  var location = {};
   String selectedGender = 'Male';
 
   ///Boolean variables that are used to check if the passwords text should be visible or not
   bool showPlainPasswd = false;
   bool showPlainConfirmPasswd = false;
-
-  String? validatePassword(String value, bool isConfirmation) {
-    RegExp regex =
-        RegExp(r'^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[!@#\$&*~]).{8,}$');
-    if (value.isEmpty) {
-      return 'Please enter password';
-    } else {
-      if (!regex.hasMatch(value)) {
-        return 'Enter valid password';
-      }
-      if (isConfirmation) {
-        if (value != password) {
-          return 'Passwords do not match';
-        }
-      } else {
-        return null;
-      }
-    }
-  }
 
   ///This variable holds the GetXController of AuthController
   late AuthController _authController = Get.put(AuthController());
@@ -85,8 +149,29 @@ class _RegisterState extends State<Register> {
   DateTime selectedDate = DateTime.now();
   DateTime firstDate = DateTime(1922, 1);
   DateTime lastDate = DateTime(DateTime(DateTime.now().year).year + 100);
-  late AuthProvider _authProvider;
   EdgeInsets _scrollPading = EdgeInsets.only(bottom: 0);
+  late AuthProvider _authProvider;
+
+  void requestLocation(BuildContext ctx) async {
+    Position pos = await determinePosition(ctx);
+
+    if (pos != null) {
+      List marks =
+          await convertCoordinatesToAddresses(pos.longitude, pos.latitude);
+      Placemark mark = marks[3];
+      setState(() {
+        location = {
+          'Longitude': pos.longitude,
+          'Latitude': pos.latitude,
+          'Country': mark.country,
+          'CountryCode': mark.isoCountryCode,
+          'PostalCode': mark.postalCode
+        };
+      });
+      Get.back();
+    }
+  }
+
   @override
   void initState() {
     super.initState();
@@ -104,6 +189,14 @@ class _RegisterState extends State<Register> {
         print('fetched cuisines -> $fetchedCuisines');
       }
       _authProvider = Provider.of<AuthProvider>(context, listen: false);
+    });
+    Future.delayed(Duration(seconds: 1), () {
+      Get.dialog(
+          RequestLocationWidget(
+              width: .7.sw,
+              height: .5.sh,
+              callback: () => requestLocation(context)),
+          barrierDismissible: false);
     });
   }
 
@@ -230,29 +323,44 @@ class _RegisterState extends State<Register> {
                   border:
                       Border(bottom: BorderSide(color: Colors.grey.shade200)),
                 ),
-                child: TextFormField(
-                  scrollPadding: _scrollPading,
-                  autovalidateMode: AutovalidateMode.onUserInteraction,
-                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                  keyboardType: TextInputType.phone,
-                  toolbarOptions: ToolbarOptions(
-                      copy: true, paste: true, selectAll: true, cut: true),
-                  onChanged: (value) {
-                    if (value.isNotEmpty && value != '') {
-                      setState(() {
-                        phone = value.trim();
-                      });
-                    }
+                child: InternationalPhoneNumberInput(
+                  keyboardAction: TextInputAction.done,
+                  // textFieldController: controllerPhone,
+                  onInputChanged: (PhoneNumber number) {
+                    // print(number.phoneNumber);
+                    setState(() {
+                      phone = "${number.phoneNumber!}";
+                    });
                   },
+                  // onInputValidated: (bool value) {
+                  //   print(value);
+                  // },
+                  selectorConfig: SelectorConfig(
+                    selectorType: PhoneInputSelectorType.BOTTOM_SHEET,
+                  ),
+                  ignoreBlank: false,
+                  // autoValidateMode: AutovalidateMode.onUserInteraction,
+                  selectorTextStyle: TextStyle(color: Colors.black),
+                  initialValue: PhoneNumber(
+                    dialCode: '+961',
+                    phoneNumber: phone,
+                    isoCode: 'LB',
+                  ),
                   validator: (val) => (phone == '' || !phone.isPhoneNumber)
                       ? "Enter a valid phone number"
                       : null,
-                  decoration: InputDecoration(
-                      suffixIcon: Icon(Icons.phone_iphone_sharp),
-                      hintText:
-                          translate(appLanguage, context, 'placeholder.phone'),
-                      hintStyle: TextStyle(color: Colors.grey),
-                      border: InputBorder.none),
+                  // textFieldController: controllerPhone,
+                  formatInput: true,
+                  keyboardType: TextInputType.phone,
+                  hintText: phone,
+                  // inputBorder: OutlineInputBorder(),
+                  onSaved: (PhoneNumber number) {
+                    print('On Saved: $number');
+                    setState(() {
+                      phone = "${number.dialCode}${number.phoneNumber!}";
+                    });
+                    print('new phone $phone');
+                  },
                 ),
               ),
               //#DOB
@@ -370,7 +478,8 @@ class _RegisterState extends State<Register> {
                       });
                     }
                   },
-                  validator: (val) => validatePassword(val!, true),
+                  validator: (val) => validatePassword(val!, true,
+                      confirmationPassword: password),
                   decoration: InputDecoration(
                       suffixIcon: IconButton(
                           onPressed: () {
@@ -627,7 +736,18 @@ class _RegisterState extends State<Register> {
         password == '' ||
         confirmpassword == '' ||
         selectedCuisine == {} ||
-        selectedGender == '') {
+        selectedGender == '' ||
+        location == {}) {
+      debugPrint("firstname $firstname");
+      debugPrint("lastname $lastname");
+      debugPrint("email $email");
+      debugPrint("phone $phone");
+      debugPrint("dob $dob");
+      debugPrint("password $password");
+      debugPrint("confirmpassword $confirmpassword");
+      debugPrint("selectedGender $selectedGender");
+      debugPrint("selectedCuisine $selectedCuisine");
+      debugPrint("location $location");
       customAlert(
           context,
           translate(lang, context, 'alert.ErrorTitle'),
@@ -647,11 +767,12 @@ class _RegisterState extends State<Register> {
         'Lastname': lastname,
         'Email': email,
         'Phone': phone,
-        'DOB': dob,
+        'Dob': dob,
         'Password': password,
         'Gender': selectedGender,
         'FirebaseId': generateRandomString(28),
-        'Preference': prefObj
+        'Preferences': prefObj,
+        'Location': location
       };
       print('creating user $userObj..');
       var response = await register(userObj);

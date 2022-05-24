@@ -12,8 +12,8 @@ class CustomAppBar extends StatelessWidget with PreferredSizeWidget {
   const CustomAppBar({
     Key? key,
     required this.controller,
-    required this.withTrailingAction,
-    this.trailingActionWidgets,
+    this.withTrailingAction = false,
+    this.trailingActionWidgets = const [],
     this.title = 'Let\'s Talk',
     this.bgColor = CHAIR_COLOR,
     this.textColor = DARK_BLUE_COLOR,
@@ -22,7 +22,7 @@ class CustomAppBar extends StatelessWidget with PreferredSizeWidget {
   }) : super(key: key);
   final AdvancedDrawerController controller;
   final bool withTrailingAction;
-  final List<Widget>? trailingActionWidgets;
+  final List<Widget> trailingActionWidgets;
   final String title;
   final Color? bgColor;
   final Color? textColor;
@@ -63,7 +63,7 @@ class CustomAppBar extends StatelessWidget with PreferredSizeWidget {
                   },
                 ),
         ),
-        actions: withTrailingAction ? trailingActionWidgets! : null);
+        actions: !withTrailingAction ? null : trailingActionWidgets);
   }
 
   @override

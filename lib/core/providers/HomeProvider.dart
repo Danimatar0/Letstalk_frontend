@@ -27,7 +27,7 @@ class HomeProvider extends ChangeNotifier {
           .collection(pathCollection)
           .limit(limit)
           .where(FirestoreConstants.idFrom,
-              isEqualTo: iduserFrom) //fetch chats  where the user is the sender
+              isEqualTo: iduserFrom) //fetch chats where the user is the sender
           .where(FirestoreConstants.idTo,
               isNotEqualTo:
                   iduserFrom) // fetch chats where the user is not the receiver
@@ -39,6 +39,10 @@ class HomeProvider extends ChangeNotifier {
       return firebaseFirestore
           .collection(pathCollection)
           .limit(limit)
+
+          ///This below query, is to make sure not to fetch the same user as the logged in user
+          .where('id', isNotEqualTo: iduserFrom)
+          // .orderBy(FirestoreConstants.timestamp, descending: true)
           // .where(FirestoreConstants.idFrom,
           //     isEqualTo: iduserFrom) //fetch chats  where the user is the sender
           // .where(FirestoreConstants.idTo,

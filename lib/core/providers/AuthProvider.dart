@@ -1,14 +1,20 @@
+import 'dart:convert';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:letstalk/core/providers/SettingProvider.dart';
 import 'package:letstalk/core/services/AuthService.dart';
+import 'package:letstalk/utils/common.dart';
+import 'package:provider/provider.dart';
 import '../constants/constants.dart';
 import '../controllers/LoginController.dart';
 import '../models/LoggedUser.dart';
 import '../models/models.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:http/http.dart' as http;
 
 enum Status {
   uninitialized,
@@ -50,10 +56,24 @@ class AuthProvider extends ChangeNotifier {
     }
   }
 
+  Future<String> getGender() async {
+    final headers = await googleSignIn.currentUser!.authHeaders;
+    final r = await http.get(
+        Uri.parse(
+            "https://people.googleapis.com/v1/people/me?personFields=genders&key="),
+        headers: <String, String>{
+          "Authorization": headers["Authorization"] ?? ""
+        });
+    final response = jsonDecode(r.body);
+    debugPrint("responsee $response");
+    return response["genders"][0]["formattedValue"];
+  }
+
   void setSharedPreferences(dynamic user) async {
     print('setting prefs for ${user['firebaseId']}');
     await prefs.setString(FirestoreConstants.id, user['firebaseId']);
-    await prefs.setString(FirestoreConstants.nickname, user['firstname'] ?? "");
+    await prefs.setString(FirestoreConstants.nickname,
+        user['firstname'] + " ${user['lastname']}" ?? "");
     await prefs.setString(FirestoreConstants.photoUrl, user['image'] ?? "");
     await prefs.setString(FirestoreConstants.aboutMe, user['aboutMe'] ?? '');
   }
@@ -69,7 +89,7 @@ class AuthProvider extends ChangeNotifier {
       // Writing data to server because here is a new user
       print('writing data to server');
       SetOptions options = SetOptions(merge: true);
-      // print(user['firstname']);
+      print(user['firstname']);
       String firstname = user['firstname'] ?? '';
       String lastname = user['lastname'] ?? '';
       String nickname = '$firstname $lastname';
@@ -91,7 +111,7 @@ class AuthProvider extends ChangeNotifier {
       // Already sign up, just get data from firestore
       print('already sign up');
       documents.forEach((d) {
-        print('document -> ${d.data()}');
+        // print('document -> ${d.data()}');
       });
       String firstname = user['firstname'] ?? '';
       String lastname = user['lastname'] ?? '';
@@ -116,34 +136,36 @@ class AuthProvider extends ChangeNotifier {
         'aboutMe': userChat.aboutMe,
         'firebaseId': user['firebaseId'],
       };
-      print('after userobj');
+      // print('after userobj');
       // Write data to local
       setSharedPreferences(userChatObj);
     }
   }
 
-  Future<bool> handleSignIn() async {
+  Future<bool> handleSignIn(dynamic location, BuildContext ctx) async {
+    print(location);
     _status = Status.authenticating;
     notifyListeners();
-    // print('1');
-    GoogleSignInAccount? googleUser = await googleSignIn.signIn();
-    // print('2');
+    SettingProvider settingProvider = ctx.read<SettingProvider>();
 
+    GoogleSignInAccount? googleUser = await googleSignIn.signIn();
     if (googleUser != null) {
       // print('inn');
       GoogleSignInAuthentication? googleAuth = await googleUser.authentication;
+      var localUser = await checkUserExistsLocally(
+          prefs.getString('username')!, googleAuth.accessToken!);
+      // if (localUser == null) {
       // print(googleAuth.idToken.toString());
-      // print(googleAuth.accessToken);
+      // print('token: ' + googleAuth.accessToken.toString());
       final AuthCredential credential = GoogleAuthProvider.credential(
         accessToken: googleAuth.accessToken,
         idToken: googleAuth.idToken,
       );
-      // print(credential);
       User? firebaseUser =
           (await firebaseAuth.signInWithCredential(credential)).user;
-      // print(firebaseUser);
       if (firebaseUser != null) {
         List<String> fullName = firebaseUser.displayName.toString().split(" ");
+        // print(firebaseUser.phoneNumber);
         LoggedUser loggedUser = LoggedUser(
             id: -1,
             username: firebaseUser.email!,
@@ -151,10 +173,17 @@ class AuthProvider extends ChangeNotifier {
             lastname: fullName[1],
             phone: firebaseUser.phoneNumber,
             imgUrl: firebaseUser.photoURL!,
-            FirebaseId: firebaseUser.uid);
+            preferences: [],
+            FirebaseId: firebaseUser.uid,
+            latitude: location['Latitude'],
+            longitude: location['Longitude'],
+            // gender: await getGender(),
+            token: generateRandomString(203));
         _authController.setUser(loggedUser);
         prefs.setBool('isAuthenticated', true);
         prefs.setString('username', firebaseUser.email!);
+        prefs.setString("provider", "google");
+        prefs.setDouble("range", 80);
         // prefs.setString("FirebaseId", firebaseUser.uid);
         _authController.isLoading.toggle();
         dynamic user = {
@@ -165,45 +194,25 @@ class AuthProvider extends ChangeNotifier {
           'firebaseId': firebaseUser.uid,
         };
         initializeUserFirebase(user);
-        var localUser = await checkUserExistsLocally(
-            prefs.getString('username')!, googleAuth.accessToken!);
-        print(localUser);
-        // final QuerySnapshot result = await firebaseFirestore
-        //     .collection(FirestoreConstants.pathUserCollection)
-        //     .where(FirestoreConstants.id, isEqualTo: firebaseUser.uid)
-        //     .get();
-        // // print('results -> $result');
-        // final List<DocumentSnapshot> documents = result.docs;
-        // if (documents.isEmpty) {
-        //   // Writing data to server because here is a new user
-        //   firebaseFirestore
-        //       .collection(FirestoreConstants.pathUserCollection)
-        //       .doc(firebaseUser.uid)
-        //       .set({
-        //     FirestoreConstants.nickname: firebaseUser.displayName,
-        //     FirestoreConstants.photoUrl: firebaseUser.photoURL,
-        //     FirestoreConstants.id: firebaseUser.uid,
-        //     'createdAt': DateTime.now().millisecondsSinceEpoch.toString(),
-        //     FirestoreConstants.chattingWith: null
-        //   });
-
-        //   // Write data to local storage
-        //   User? currentUser = firebaseUser;
-        //   await prefs.setString(FirestoreConstants.id, currentUser.uid);
-        //   await prefs.setString(
-        //       FirestoreConstants.nickname, currentUser.displayName ?? "");
-        //   await prefs.setString(
-        //       FirestoreConstants.photoUrl, currentUser.photoURL ?? "");
-        // } else {
-        //   // Already sign up, just get data from firestore
-        //   DocumentSnapshot documentSnapshot = documents[0];
-        //   UserChat userChat = UserChat.fromDocument(documentSnapshot);
-        //   // Write data to local
-        //   await prefs.setString(FirestoreConstants.id, userChat.id);
-        //   await prefs.setString(FirestoreConstants.nickname, userChat.nickname);
-        //   await prefs.setString(FirestoreConstants.photoUrl, userChat.photoUrl);
-        //   await prefs.setString(FirestoreConstants.aboutMe, userChat.aboutMe);
-        // }
+        var userObj = {
+          'Firstname': loggedUser.firstname,
+          'Lastname': loggedUser.lastname,
+          'Image': loggedUser.imgUrl,
+          'Email': firebaseUser.email!,
+          'Phone': firebaseUser.phoneNumber,
+          'Password': generateRandomString(8),
+          // 'Gender': await getGender(),
+          'FirebaseId': firebaseUser.uid,
+          'Location': location
+        };
+        if (localUser == null) {
+          print('creating user $userObj..');
+          var response = await register(userObj);
+          if (response['statusCode'] != 200 && response['statusCode'] != 201) {
+            _authController.isLoading.toggle();
+            return Future.error("Unable to register user locally");
+          }
+        }
         _status = Status.authenticated;
         notifyListeners();
         return true;
@@ -212,6 +221,13 @@ class AuthProvider extends ChangeNotifier {
         notifyListeners();
         return false;
       }
+      // }
+      // else {
+      //   _status = Status.authenticateError;
+      //   notifyListeners();
+      //   print("this user already exists locally ");
+      //   return false;
+      // }
     } else {
       _status = Status.authenticateCanceled;
       notifyListeners();

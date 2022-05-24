@@ -3,13 +3,17 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:geocoding/geocoding.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
 import 'package:letstalk/core/models/LoggedUser.dart';
 import 'package:letstalk/core/models/Preference.dart';
 import 'package:letstalk/core/providers/AuthProvider.dart';
 import 'package:letstalk/core/services/AuthService.dart';
+import 'package:letstalk/core/services/LocationService.dart';
 import 'package:provider/src/provider.dart';
 import 'package:rflutter_alert/rflutter_alert.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../../core/controllers/LoginController.dart';
 import '../../../core/internationalization/AppLanguage.dart';
 import '../../../core/providers/GoogleSignInProvider.dart';
@@ -31,6 +35,30 @@ class _LandingPageMobileState extends State<LandingPageMobile> {
   bool showPassword = false;
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
+  var location = {};
+
+  void requestLocation(BuildContext ctx) async {
+    print('calling location');
+    Position pos = await determinePosition(ctx);
+
+    if (pos != null) {
+      List marks =
+          await convertCoordinatesToAddresses(pos.longitude, pos.latitude);
+      Placemark mark = marks[3];
+      setState(() {
+        location = {
+          'Longitude': pos.longitude,
+          'Latitude': pos.latitude,
+          'Country': mark.country,
+          'CountryCode': mark.isoCountryCode,
+          'PostalCode': mark.postalCode
+        };
+      });
+      debugPrint("location is $location");
+      Get.back();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     bool autofillEmail = Get.arguments != null ? Get.arguments[0] : false;
@@ -48,8 +76,11 @@ class _LandingPageMobileState extends State<LandingPageMobile> {
         Color(0xFFea4335),
       ],
     ).createShader(const Rect.fromLTWH(0.0, 0.0, 200.0, 70.0));
+    bool isEmailFocused = false;
+    bool isPasswordFocused = false;
     return Scaffold(
-      resizeToAvoidBottomInset: false,
+      resizeToAvoidBottomInset:
+          (isEmailFocused || isPasswordFocused) ? true : false,
       body: Obx(() => _authController.isLoading.isTrue
           ? const Center(child: CircularProgressIndicator(color: Colors.purple))
           : Container(
@@ -127,6 +158,12 @@ class _LandingPageMobileState extends State<LandingPageMobile> {
                                     ),
                                     child: TextField(
                                       controller: emailController,
+                                      onTap: () {
+                                        setState(() {
+                                          isEmailFocused = true;
+                                          isPasswordFocused = false;
+                                        });
+                                      },
                                       onChanged: (value) {
                                         if (value.isNotEmpty) {
                                           setState(() {
@@ -151,6 +188,12 @@ class _LandingPageMobileState extends State<LandingPageMobile> {
                                               color: Colors.grey.shade200)),
                                     ),
                                     child: TextFormField(
+                                      onTap: () {
+                                        setState(() {
+                                          isEmailFocused = false;
+                                          isPasswordFocused = true;
+                                        });
+                                      },
                                       controller: passwordController,
                                       autovalidateMode:
                                           AutovalidateMode.onUserInteraction,
@@ -193,6 +236,8 @@ class _LandingPageMobileState extends State<LandingPageMobile> {
                                   color: Colors.white,
                                   bgColor: PRIMARY_COLOR,
                                   onTapCallBack: () async {
+                                    requestLocation(context);
+
                                     _authController.isLoading.toggle();
                                     final provider = Provider.of<AuthProvider>(
                                         context,
@@ -221,12 +266,22 @@ class _LandingPageMobileState extends State<LandingPageMobile> {
                                     }
                                     String token = response['token'] ?? '';
                                     var userRes = response['user'];
-                                    print('userRes $userRes');
+                                    // print('userRes $userRes');
                                     List<Preference> userPrefs = [];
-                                    (userRes['userPreferences'] as List)
-                                        .forEach((pref) {
-                                          
-                                        });
+                                    if (userRes['preferences'] != null &&
+                                        userRes['preferences'] != []) {
+                                      (userRes['preferences'] as List)
+                                          .forEach((pref) {
+                                        Preference userPref = new Preference(
+                                            id: pref['id'],
+                                            cuisineCountry:
+                                                pref['cuisineCountry'],
+                                            cuisineName: pref['cuisineName']);
+                                        userPrefs.add(userPref);
+                                      });
+                                    }
+                                    print(
+                                        "locationnn mff" + location.toString());
                                     LoggedUser loggedUser = LoggedUser(
                                         id: userRes['id'] ?? -1,
                                         username: userRes['email'] ?? '',
@@ -238,15 +293,26 @@ class _LandingPageMobileState extends State<LandingPageMobile> {
                                         gender: userRes['gender'] ?? '',
                                         token: token,
                                         FirebaseId: userRes['firebaseId'] ?? '',
-                                        preferences:
-                                            userRes['userPreferences'] ?? []);
+                                        preferences: userPrefs,
+                                        longitude: location['Longitude'],
+                                        latitude: location['Latitude']);
                                     _authController.setUser(loggedUser);
-                                    _authController.isLoading.toggle();
+                                    // _authController.isLoading.toggle();
                                     // userRes['id'] = generateRandomString(28);
                                     // print(userRes['id']);
+                                    SharedPreferences prefs =
+                                        await SharedPreferences.getInstance();
+                                    prefs.setBool('isAuthenticated', true);
+                                    prefs.setString("provider", "local");
+                                    prefs.setDouble("range", 80);
+                                    _authController.isLoading.toggle();
+
                                     Future.delayed(Duration.zero, () {
                                       provider.initializeUserFirebase(userRes);
-                                    }).then((value) => Get.toNamed('/match'));
+                                    }).then((value) => Get.toNamed(
+                                        loggedUser.imgUrl == ''
+                                            ? '/profile'
+                                            : '/match'));
                                     // Get.toNamed('/match');
                                   }),
                             ),
@@ -286,16 +352,16 @@ class _LandingPageMobileState extends State<LandingPageMobile> {
                                             ),
                                             child: ListTile(
                                               onTap: () async {
+                                                requestLocation(context);
                                                 final provider =
                                                     Provider.of<AuthProvider>(
                                                         context,
                                                         listen: false);
-                                                bool isAuth = await provider
-                                                    .handleSignIn();
-                                                print(
-                                                    'authenticated ? $isAuth');
+                                                bool isAuth =
+                                                    await provider.handleSignIn(
+                                                        location, context);
                                                 if (isAuth)
-                                                  Get.toNamed('/match');
+                                                  Get.toNamed('/profile');
                                               },
                                               leading: const Icon(
                                                 FontAwesomeIcons.google,

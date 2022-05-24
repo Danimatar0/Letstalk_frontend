@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
+
 import 'package:letstalk/core/models/Preference.dart';
 
 class LoggedUser {
@@ -14,7 +15,9 @@ class LoggedUser {
   String? dob;
   String? gender;
   String? FirebaseId;
-  List<Preference>? preferences;
+  double? longitude;
+  double? latitude;
+  List<Preference> preferences;
   LoggedUser({
     required this.id,
     required this.username,
@@ -26,7 +29,9 @@ class LoggedUser {
     this.dob,
     this.gender,
     this.FirebaseId,
-    this.preferences,
+    this.longitude,
+    this.latitude,
+    required this.preferences,
   });
 
   LoggedUser copyWith({
@@ -40,6 +45,8 @@ class LoggedUser {
     String? dob,
     String? gender,
     String? FirebaseId,
+    double? longitude,
+    double? latitude,
     List<Preference>? preferences,
   }) {
     return LoggedUser(
@@ -53,6 +60,8 @@ class LoggedUser {
       dob: dob ?? this.dob,
       gender: gender ?? this.gender,
       FirebaseId: FirebaseId ?? this.FirebaseId,
+      longitude: longitude ?? this.longitude,
+      latitude: latitude ?? this.latitude,
       preferences: preferences ?? this.preferences,
     );
   }
@@ -69,7 +78,9 @@ class LoggedUser {
       'dob': dob,
       'gender': gender,
       'FirebaseId': FirebaseId,
-      'preferences': preferences?.map((x) => x.toMap()).toList(),
+      'longitude': longitude,
+      'latitude': latitude,
+      'preferences': preferences.map((x) => x.toMap()).toList(),
     };
   }
 
@@ -85,10 +96,10 @@ class LoggedUser {
       dob: map['dob'],
       gender: map['gender'],
       FirebaseId: map['FirebaseId'],
-      preferences: map['preferences'] != null
-          ? List<Preference>.from(
-              map['preferences']?.map((x) => Preference.fromMap(x)))
-          : null,
+      longitude: map['longitude']?.toDouble(),
+      latitude: map['latitude']?.toDouble(),
+      preferences: List<Preference>.from(
+          map['preferences']?.map((x) => Preference.fromMap(x))),
     );
   }
 
@@ -99,7 +110,7 @@ class LoggedUser {
 
   @override
   String toString() {
-    return 'LoggedUser(id: $id, username: $username, firstname: $firstname, lastname: $lastname, imgUrl: $imgUrl, token: $token, phone: $phone, dob: $dob, gender: $gender, FirebaseId: $FirebaseId, preferences: $preferences)';
+    return 'LoggedUser(id: $id, username: $username, firstname: $firstname, lastname: $lastname, imgUrl: $imgUrl, token: $token, phone: $phone, dob: $dob, gender: $gender, FirebaseId: $FirebaseId, longitude: $longitude, latitude: $latitude, preferences: $preferences)';
   }
 
   @override
@@ -117,6 +128,8 @@ class LoggedUser {
         other.dob == dob &&
         other.gender == gender &&
         other.FirebaseId == FirebaseId &&
+        other.longitude == longitude &&
+        other.latitude == latitude &&
         listEquals(other.preferences, preferences);
   }
 
@@ -132,6 +145,8 @@ class LoggedUser {
         dob.hashCode ^
         gender.hashCode ^
         FirebaseId.hashCode ^
+        longitude.hashCode ^
+        latitude.hashCode ^
         preferences.hashCode;
   }
 }
