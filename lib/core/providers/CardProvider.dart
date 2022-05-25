@@ -94,7 +94,7 @@ class CardProvider extends ChangeNotifier {
 
   void resetUsers(String token) async {
     print('resetting users');
-    List tmp = await getUsersByPreferenceId(currentUser.id, token);
+    List tmp = await getUsersByPreferenceId(currentUser.username, token);
     // print('tmpppp $tmp');
     List<User> listusers = [];
     tmp.forEach((e) {

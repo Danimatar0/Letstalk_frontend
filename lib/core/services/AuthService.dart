@@ -47,6 +47,7 @@ Future<dynamic> login(dynamic user) async {
   var data = {};
   if (response.body.isNotEmpty) {
     data = jsonDecode(response.body);
+    print(data);
   } else {
     print('response body is empty');
   }
@@ -54,7 +55,7 @@ Future<dynamic> login(dynamic user) async {
 }
 
 Future<dynamic> checkUserExistsLocally(String email, String token) async {
-  final url = getIP() + "Auth/checkUserExists/${email}";
+  final url = getIP() + "Auth/checkUserExists/$email";
   final response = await http.get(
     Uri.parse(url),
     headers: <String, String>{

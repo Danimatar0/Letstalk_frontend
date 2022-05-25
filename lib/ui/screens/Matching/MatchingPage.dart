@@ -211,7 +211,7 @@ class _MatchingScreenState extends State<MatchingScreen>
                     title: 'Change your preferences',
                     color: PRIMARY_COLOR,
                     onTapCallBack: () {
-                      Get.toNamed('/settings');
+                      Get.toNamed('/profile', arguments: [true]);
                     })
               ]);
 

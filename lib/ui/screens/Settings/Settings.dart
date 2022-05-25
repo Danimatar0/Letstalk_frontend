@@ -32,6 +32,9 @@ class _SettingsPageState extends State<SettingsPage> {
   String confirmpassword = '';
   RangeValues rangeValues = RangeValues(0, 100);
   double selectedRange = 80.0;
+  bool isMatchesEnabled = true;
+  bool isDarkMode = false;
+
   void _handleMenuButtonPressed() {
     _advancedDrawerController.showDrawer();
   }
@@ -44,6 +47,18 @@ class _SettingsPageState extends State<SettingsPage> {
     });
   }
 
+  void toggleLanguage() {}
+
+  void toggleThemeMode() {
+    setState(() {
+      isDarkMode = !isDarkMode;
+    });
+    if (Get.isDarkMode)
+      Get.changeThemeMode(ThemeMode.light);
+    else
+      Get.changeThemeMode(ThemeMode.dark);
+  }
+
   @override
   Widget build(BuildContext context) {
     LoggedUser currentUser = LoggedUser.fromJson(_authController.user);
@@ -54,7 +69,9 @@ class _SettingsPageState extends State<SettingsPage> {
       {'id': 2, 'lang': 'French'}
     ];
     int selectedLanguage = -1;
-    Row buildNotificationOptionRow(String title, bool isActive) {
+
+    Row buildNotificationOptionRow(
+        String title, bool isActive, Function onChange) {
       return Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
@@ -69,7 +86,7 @@ class _SettingsPageState extends State<SettingsPage> {
               scale: 0.7,
               child: Switch(
                 value: isActive,
-                onChanged: (bool val) {},
+                onChanged: (bool val) => onChange(val),
               ))
         ],
       );
@@ -197,87 +214,99 @@ class _SettingsPageState extends State<SettingsPage> {
               SizedBox(
                 height: 10,
               ),
-              if (prefs!.getString("provider") == "local")
-                buildAccountOptionRow(
-                    context, Icons.password_sharp, "Change password", [
-                  Column(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      //#Password
-                      Container(
-                        padding: const EdgeInsets.all(10),
-                        decoration: BoxDecoration(
-                          border: Border(
-                              bottom: BorderSide(color: Colors.grey.shade200)),
+              if (prefs != null)
+                if (prefs!.getString("provider") == "local")
+                  buildAccountOptionRow(
+                      context, Icons.password_sharp, "Change password", [
+                    Column(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        //#Password
+                        Container(
+                          padding: const EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            border: Border(
+                                bottom:
+                                    BorderSide(color: Colors.grey.shade200)),
+                          ),
+                          child: TextFormField(
+                            // scrollPadding: _scrollPading,
+                            autovalidateMode:
+                                AutovalidateMode.onUserInteraction,
+                            obscureText: !showPlainPasswd,
+                            onChanged: (value) {
+                              if (value.isNotEmpty && value != '') {
+                                setState(() {
+                                  password = value.trim();
+                                });
+                              }
+                            },
+                            validator: (val) => validatePassword(val!, false),
+                            decoration: InputDecoration(
+                                suffixIcon: IconButton(
+                                    onPressed: () {
+                                      setState(() {
+                                        showPlainPasswd = !showPlainPasswd;
+                                      });
+                                    },
+                                    icon: Icon(Icons.remove_red_eye)),
+                                hintText: translate(appLanguage, context,
+                                    'placeholder.password'),
+                                hintStyle: TextStyle(color: Colors.grey),
+                                border: InputBorder.none),
+                          ),
                         ),
-                        child: TextFormField(
-                          // scrollPadding: _scrollPading,
-                          autovalidateMode: AutovalidateMode.onUserInteraction,
-                          obscureText: !showPlainPasswd,
-                          onChanged: (value) {
-                            if (value.isNotEmpty && value != '') {
-                              setState(() {
-                                password = value.trim();
-                              });
-                            }
-                          },
-                          validator: (val) => validatePassword(val!, false),
-                          decoration: InputDecoration(
-                              suffixIcon: IconButton(
-                                  onPressed: () {
-                                    setState(() {
-                                      showPlainPasswd = !showPlainPasswd;
-                                    });
-                                  },
-                                  icon: Icon(Icons.remove_red_eye)),
-                              hintText: translate(
-                                  appLanguage, context, 'placeholder.password'),
-                              hintStyle: TextStyle(color: Colors.grey),
-                              border: InputBorder.none),
+                        //#Confirm Password
+                        Container(
+                          padding: const EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            border: Border(
+                                bottom:
+                                    BorderSide(color: Colors.grey.shade200)),
+                          ),
+                          child: TextFormField(
+                            // scrollPadding: _scrollPading,
+                            autovalidateMode:
+                                AutovalidateMode.onUserInteraction,
+                            obscureText: !showPlainConfirmPasswd,
+                            onChanged: (value) {
+                              if (value.isNotEmpty && value != '') {
+                                setState(() {
+                                  confirmpassword = value.trim();
+                                });
+                              }
+                            },
+                            validator: (val) => validatePassword(val!, true),
+                            decoration: InputDecoration(
+                                suffixIcon: IconButton(
+                                    onPressed: () {
+                                      setState(() {
+                                        showPlainConfirmPasswd =
+                                            !showPlainConfirmPasswd;
+                                      });
+                                    },
+                                    icon: Icon(Icons.remove_red_eye)),
+                                hintText: translate(appLanguage, context,
+                                    'placeholder.confirmPassword'),
+                                hintStyle: const TextStyle(color: Colors.grey),
+                                border: InputBorder.none),
+                          ),
                         ),
-                      ),
-                      //#Confirm Password
-                      Container(
-                        padding: const EdgeInsets.all(10),
-                        decoration: BoxDecoration(
-                          border: Border(
-                              bottom: BorderSide(color: Colors.grey.shade200)),
+                        SizedBox(
+                          height: 20,
                         ),
-                        child: TextFormField(
-                          // scrollPadding: _scrollPading,
-                          autovalidateMode: AutovalidateMode.onUserInteraction,
-                          obscureText: !showPlainConfirmPasswd,
-                          onChanged: (value) {
-                            if (value.isNotEmpty && value != '') {
-                              setState(() {
-                                confirmpassword = value.trim();
-                              });
-                            }
-                          },
-                          validator: (val) => validatePassword(val!, true),
-                          decoration: InputDecoration(
-                              suffixIcon: IconButton(
-                                  onPressed: () {
-                                    setState(() {
-                                      showPlainConfirmPasswd =
-                                          !showPlainConfirmPasswd;
-                                    });
-                                  },
-                                  icon: Icon(Icons.remove_red_eye)),
-                              hintText: translate(appLanguage, context,
-                                  'placeholder.confirmPassword'),
-                              hintStyle: const TextStyle(color: Colors.grey),
-                              border: InputBorder.none),
-                        ),
-                      ),
-                      TextButton(
-                          onPressed: () async {
-                            changePassword(currentUser.id, password);
-                          },
-                          child: Text("Change password")),
-                    ],
-                  )
-                ]),
+                        TextButton(
+                            onPressed: () async {
+                              changePassword(currentUser.id, password);
+                            },
+                            child: Text(
+                              "Change password",
+                              style: TextStyle(
+                                  color: DARK_BLUE_COLOR, fontSize: 16),
+                            )),
+                      ],
+                    )
+                  ]),
               buildAccountOptionRow(
                   context, Icons.slideshow_rounded, "Range settings", [
                 Text(selectedRange.toStringAsPrecision(2),
@@ -358,7 +387,11 @@ class _SettingsPageState extends State<SettingsPage> {
               SizedBox(
                 height: 10,
               ),
-              buildNotificationOptionRow("Matches", true),
+              buildNotificationOptionRow("Matches", isMatchesEnabled, (val) {
+                setState(() {
+                  isMatchesEnabled = val;
+                });
+              }),
 
               SizedBox(
                 height: 40,
@@ -386,7 +419,8 @@ class _SettingsPageState extends State<SettingsPage> {
               SizedBox(
                 height: 10,
               ),
-              buildNotificationOptionRow("Dark mode", false),
+              buildNotificationOptionRow(
+                  "Dark mode", isDarkMode, (val) => toggleThemeMode()),
               // buildNotificationOptionRow("Account activity", true),
               // buildNotificationOptionRow("Opportunity", false),
               Container(

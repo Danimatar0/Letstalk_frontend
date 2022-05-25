@@ -771,7 +771,7 @@ class _RegisterState extends State<Register> {
         'Password': password,
         'Gender': selectedGender,
         'FirebaseId': generateRandomString(28),
-        'Preferences': prefObj,
+        'Preferences': [prefObj],
         'Location': location
       };
       print('creating user $userObj..');

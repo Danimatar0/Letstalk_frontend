@@ -46,7 +46,6 @@ class ProfilePage extends StatefulWidget {
 
 class _ProfilePageState extends State<ProfilePage> {
   final _advancedDrawerController = AdvancedDrawerController();
-  final ScrollController listScrollController = ScrollController();
 
   void _handleMenuButtonPressed() {
     _advancedDrawerController.showDrawer();
@@ -55,6 +54,12 @@ class _ProfilePageState extends State<ProfilePage> {
   @override
   void initState() {
     super.initState();
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    _advancedDrawerController.dispose();
   }
 
   @override
@@ -152,8 +157,17 @@ class ProfilePageStateState extends State<ProfilePageState> {
   String authProvider = "";
 
   List fetchedCuisines = [];
-
   bool showPrefs = false;
+
+  final ScrollController listScrollController = ScrollController();
+
+  void scrollToBottom() {
+    listScrollController.animateTo(
+      listScrollController.position.maxScrollExtent,
+      duration: Duration(milliseconds: 300),
+      curve: Curves.easeOut,
+    );
+  }
 
   void onUpdate(AppLanguage lang) async {
     if (firstname == '' ||
@@ -226,8 +240,14 @@ class ProfilePageStateState extends State<ProfilePageState> {
       setState(() {
         fetchedCuisines = temp;
       });
+      bool scrollDown = Get.arguments != null && Get.arguments[0] != null
+          ? Get.arguments[0]
+          : false;
+      if (scrollDown) {
+        scrollToBottom();
+      }
     });
-    // print(phoneNumber);
+    // print("Phoneeee $phone");
     readLocal();
   }
 
@@ -469,11 +489,16 @@ class ProfilePageStateState extends State<ProfilePageState> {
   @override
   Widget build(BuildContext context) {
     var appLanguage = Provider.of<AppLanguage>(context);
+    bool scrollToBottom = Get.arguments != null && Get.arguments[0] != null
+        ? Get.arguments[0]
+        : false;
     return Stack(
       children: <Widget>[
-        SingleChildScrollView(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
+        Container(
+          height: double.infinity,
+          child: ListView(
+            controller: listScrollController,
+            // mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
               // Avatar
               Container(

@@ -60,10 +60,25 @@ class _LandingPageMobileState extends State<LandingPageMobile> {
   }
 
   @override
+  void initState() {
+    super.initState();
+    Future.delayed(Duration.zero, () {
+      String usernameArgs = Get.arguments != null ? Get.arguments[1] : '';
+      if (usernameArgs != '') emailController.text = usernameArgs;
+    });
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    emailController.dispose();
+    passwordController.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     bool autofillEmail = Get.arguments != null ? Get.arguments[0] : false;
-    String usernameArgs = Get.arguments != null ? Get.arguments[1] : '';
-    if (usernameArgs != '') emailController.text = usernameArgs;
+
     var appLanguage = Provider.of<AppLanguage>(context);
     var width = MediaQuery.of(context).size.width;
     var height = MediaQuery.of(context).size.height;
@@ -157,6 +172,7 @@ class _LandingPageMobileState extends State<LandingPageMobile> {
                                               color: Colors.grey.shade200)),
                                     ),
                                     child: TextField(
+                                      textInputAction: TextInputAction.next,
                                       controller: emailController,
                                       onTap: () {
                                         setState(() {

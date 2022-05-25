@@ -12,3 +12,13 @@ var YELLOW_COLOR = Colors.yellow.shade600;
 var ORANGE_COLOR = Colors.orange.shade600;
 var PURPLE_COLOR = Colors.purple.shade700;
 const DARK_BLUE_COLOR = ColorConstants.primaryColor;
+
+class Themes {
+  static final light = ThemeData.light().copyWith(
+    backgroundColor: Colors.red,
+  );
+  static final dark = ThemeData.dark().copyWith(
+    backgroundColor: Colors.black,
+    buttonColor: Colors.white,
+  );
+}

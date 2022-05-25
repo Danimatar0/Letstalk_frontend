@@ -20,11 +20,12 @@ Future<dynamic> getCuisines() async {
   return jsonDecode(response.body);
 }
 
-Future<dynamic> getUsersByPreferenceId(int userId, String token) async {
+Future<dynamic> getUsersByPreferenceId(String email, String token) async {
   SharedPreferences prefs = await SharedPreferences.getInstance();
   double range = prefs.getDouble("range") ?? 80.0;
   final String url =
-      getIP() + 'Preference/getUsersHavingSamePreference/$userId/$range';
+      getIP() + 'Preference/getUsersHavingSamePreference/$email/$range';
+  print('calling $url');
   final dynamic response =
       await http.get(Uri.parse(url), headers: <String, String>{
     "Content-Encoding": "gzip",
