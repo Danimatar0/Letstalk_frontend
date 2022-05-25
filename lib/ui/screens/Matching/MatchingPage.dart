@@ -12,6 +12,7 @@ import 'package:letstalk/core/models/User.dart';
 import 'package:letstalk/core/services/UtilsService.dart';
 import 'package:letstalk/ui/widgets/AppBar/CustomAppBar.dart';
 import 'package:letstalk/ui/widgets/CustomButton/CustomButton.dart';
+import 'package:letstalk/ui/widgets/MatchCard/ItsAMatch.dart';
 import 'package:letstalk/utils/common.dart';
 import 'package:letstalk/utils/styles.dart';
 import 'package:provider/provider.dart';
@@ -32,6 +33,8 @@ class MatchingScreen extends StatefulWidget {
 class _MatchingScreenState extends State<MatchingScreen>
     with TickerProviderStateMixin {
   late SharedPreferences _prefs;
+  User? cardUser;
+  LoggedUser? currentUser;
   late TextEditingController _textEditingController;
   final _authController = Get.put(AuthController());
   final matchController = Get.put(MatchController());
@@ -47,6 +50,7 @@ class _MatchingScreenState extends State<MatchingScreen>
     Future.delayed(Duration(seconds: 1)).then((value) {
       setState(() {
         avatarRadius.value = avatarRadius.value / 2;
+        currentUser = LoggedUser.fromJson(_authController.user);
       });
       print(avatarRadius);
     });
@@ -58,6 +62,8 @@ class _MatchingScreenState extends State<MatchingScreen>
     _advancedDrawerController.showDrawer();
   }
 
+  void action1() {}
+  void action2() {}
   void _handleLike(int idMatchee) async {
     print('liking $idMatchee');
     final cardProvider = Provider.of<CardProvider>(context, listen: false);
@@ -67,6 +73,12 @@ class _MatchingScreenState extends State<MatchingScreen>
     print('resp in handle match ==> $resp');
     if (resp['message'] == 'Match 2') {
       print('we have a matchhh wouhouu');
+
+      Get.dialog(ItsAMatch(
+          matcheeName: cardUser != null ? cardUser!.firstname : '',
+          matcheeUrl: cardUser != null ? cardUser!.avatar : '',
+          action1: () => action1(),
+          action2: () => action2()));
     }
     cardProvider.like();
   }
@@ -202,7 +214,9 @@ class _MatchingScreenState extends State<MatchingScreen>
                           localPosition: Offset(-3.0, 0.0)));
                       provider.endPosition();
 
-                      _handleLike(matchController.idMatchee.value);
+                      _handleLike(
+                        matchController.idMatchee.value,
+                      );
                     },
                     child: Icon(Icons.star, color: Colors.blue, size: 40)),
               ]
@@ -220,13 +234,14 @@ class _MatchingScreenState extends State<MatchingScreen>
       return users.isEmpty
           ? buildNoUsersLeft()
           : Stack(
-              children: users
-                  .map((u) => MatchCard(
-                        user: u,
-                        isFront: users.last == u,
-                        callBack: () {},
-                      ))
-                  .toList());
+              children: users.map((u) {
+              cardUser = (u as User);
+              return MatchCard(
+                user: u,
+                isFront: users.last == u,
+                callBack: () {},
+              );
+            }).toList());
     }
 
     return AdvancedDrawer(
