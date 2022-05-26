@@ -30,6 +30,7 @@ class _MatchCardState extends State<MatchCard> {
   @override
   void initState() {
     super.initState();
+
     WidgetsBinding.instance!.addPostFrameCallback((_) {
       final size = MediaQuery.of(context).size;
       final cardProvider = Provider.of<CardProvider>(context, listen: false);
@@ -61,12 +62,14 @@ class _MatchCardState extends State<MatchCard> {
           mainAxisSize: MainAxisSize.max,
           mainAxisAlignment: MainAxisAlignment.start,
           children: [
-            Text(
-              widget.user.firstname + ' ' + widget.user.lastname,
-              style: const TextStyle(
-                  fontSize: 32,
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold),
+            Flexible(
+              child: Text(
+                widget.user.firstname + ' ' + widget.user.lastname,
+                style: const TextStyle(
+                    fontSize: 32,
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold),
+              ),
             ),
             SizedBox(
               width: 8,
@@ -101,10 +104,10 @@ class _MatchCardState extends State<MatchCard> {
     Widget buildCard() => ClipRRect(
           borderRadius: BorderRadius.circular(20),
           child: Container(
-              decoration: BoxDecoration(
-                  image: widget.user.avatar == ''
-                      ? null
-                      : DecorationImage(
+              decoration: widget.user.avatar == ''
+                  ? null
+                  : BoxDecoration(
+                      image: DecorationImage(
                           image: NetworkImage(widget.user.avatar),
                           fit: BoxFit.cover,
                           alignment: Alignment(-0.3, 0))),

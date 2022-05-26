@@ -172,7 +172,7 @@ class ProfilePageStateState extends State<ProfilePageState> {
   void onUpdate(AppLanguage lang) async {
     if (firstname == '' ||
         lastname == '' ||
-        aboutMe == '' ||
+        // aboutMe == '' ||
         phone == '' ||
         gender == '' ||
         dob == '' ||
@@ -226,9 +226,17 @@ class ProfilePageStateState extends State<ProfilePageState> {
               'Latitude': currentUser?.latitude
             }
           };
-    print('user -> $user');
+    // print('user -> $user');
     var updatedUser = await updateUser(user, currentUser!.token!);
-    print('updatedUser -> $updatedUser');
+    // print('updatedUser -> $updatedUser');
+    customAlert(
+        context,
+        translate(lang, context, 'Success'),
+        translate(lang, context, 'Profile successfully updated'),
+        AlertType.success,
+        AnimationType.fromTop,
+        Colors.green);
+    Get.toNamed('match');
   }
 
   @override
@@ -237,9 +245,11 @@ class ProfilePageStateState extends State<ProfilePageState> {
     settingProvider = context.read<SettingProvider>();
     Future.delayed(Duration.zero, () async {
       List temp = await getCuisines();
-      setState(() {
-        fetchedCuisines = temp;
-      });
+      if (mounted) {
+        setState(() {
+          fetchedCuisines = temp;
+        });
+      }
       bool scrollDown = Get.arguments != null && Get.arguments[0] != null
           ? Get.arguments[0]
           : false;
@@ -263,6 +273,7 @@ class ProfilePageStateState extends State<ProfilePageState> {
           ? settingProvider.getPref(FirestoreConstants.id) ?? ""
           : currentUser!.FirebaseId ?? "";
       nickname = settingProvider.getPref(FirestoreConstants.nickname) ?? "";
+      email = currentUser!.username;
     });
     // print("nicknameee $nickname");
     setState(() {
@@ -600,7 +611,9 @@ class ProfilePageStateState extends State<ProfilePageState> {
                         ),
                         controller: controllerFirstname,
                         onChanged: (value) {
-                          nickname = value;
+                          setState(() {
+                            firstname = controllerFirstname!.text;
+                          });
                         },
                         focusNode: focusNodeFirstname,
                       ),
@@ -630,7 +643,9 @@ class ProfilePageStateState extends State<ProfilePageState> {
                         ),
                         controller: controllerLastname,
                         onChanged: (value) {
-                          nickname = value;
+                          setState(() {
+                            lastname = controllerLastname!.text;
+                          });
                         },
                         focusNode: focusNodeLastname,
                       ),
@@ -909,10 +924,10 @@ class ProfilePageStateState extends State<ProfilePageState> {
                                               print(
                                                   'selected preference -> $e');
                                               if (selectedPreferences.isEmpty) {
-                                                Preference pref =
-                                                    Preference.fromMap(e);
+                                                // Preference pref =
+                                                //     Preference.fromMap(e);
                                                 setState(() {
-                                                  selectedPreferences.add(pref);
+                                                  selectedPreferences.add(e);
                                                 });
                                               } else {
                                                 bool isPresent = false;
@@ -941,11 +956,10 @@ class ProfilePageStateState extends State<ProfilePageState> {
                                                     });
                                                   });
                                                 } else {
-                                                  Preference newPref =
-                                                      Preference.fromMap(e);
+                                                  // Preference newPref =
+                                                  //     Preference.fromMap(e);
                                                   setState(() {
-                                                    selectedPreferences
-                                                        .add(newPref);
+                                                    selectedPreferences.add(e);
                                                   });
                                                 }
                                               }

@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:letstalk/core/providers/SettingProvider.dart';
@@ -143,6 +144,16 @@ class AuthProvider extends ChangeNotifier {
     }
   }
 
+  void storeNotificationToken() async {
+    String? token = await FirebaseMessaging.instance.getToken();
+    //Checking my own token in users table in firestore
+    FirebaseFirestore.instance
+        .collection(FirestoreConstants.pathUserCollection)
+        .doc(FirebaseAuth.instance.currentUser!.uid)
+        .set({'pushToken': token}, SetOptions(merge: true));
+    debugPrint("Successfully stored token $token");
+  }
+
   Future<bool> handleSignIn(dynamic location, BuildContext ctx) async {
     print(location);
     _status = Status.authenticating;
@@ -180,7 +191,6 @@ class AuthProvider extends ChangeNotifier {
             longitude: location['Longitude'],
             // gender: await getGender(),
             token: generateRandomString(203));
-        _authController.setUser(loggedUser);
         prefs.setBool('isAuthenticated', true);
         prefs.setString('username', firebaseUser.email!);
         prefs.setString("provider", "google");
@@ -195,6 +205,8 @@ class AuthProvider extends ChangeNotifier {
           'firebaseId': firebaseUser.uid,
         };
         initializeUserFirebase(user);
+        storeNotificationToken();
+
         var userObj = {
           'Firstname': loggedUser.firstname,
           'Lastname': loggedUser.lastname,
@@ -213,7 +225,11 @@ class AuthProvider extends ChangeNotifier {
             _authController.isLoading.toggle();
             return Future.error("Unable to register user locally");
           }
+          loggedUser.id = await checkUserExistsLocally(
+              firebaseUser.email!, generateRandomString(50));
         }
+        _authController.setUser(loggedUser);
+
         _status = Status.authenticated;
         notifyListeners();
         return true;

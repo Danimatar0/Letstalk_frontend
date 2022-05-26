@@ -112,15 +112,15 @@ class ListingChatsPageState extends State<ListingChatsPage> {
       return;
     });
 
-    firebaseMessaging.getToken().then((token) {
-      print('push token: $token');
-      if (token != null) {
-        homeProvider.updateDataFirestore(FirestoreConstants.pathUserCollection,
-            currentUserId, {'pushToken': token});
-      }
-    }).catchError((err) {
-      Fluttertoast.showToast(msg: err.message.toString());
-    });
+    // firebaseMessaging.getToken().then((token) {
+    //   debugPrint('push token: $token');
+    //   if (token != null) {
+    //     homeProvider.updateDataFirestore(FirestoreConstants.pathUserCollection,
+    //         currentUserId, {'pushToken': token});
+    //   }
+    // }).catchError((err) {
+    //   Fluttertoast.showToast(msg: err.message.toString());
+    // });
   }
 
   void configLocalNotification() {

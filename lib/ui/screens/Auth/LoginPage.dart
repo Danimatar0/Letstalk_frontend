@@ -1,11 +1,15 @@
 import 'package:carousel_slider/carousel_slider.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
+import 'package:letstalk/core/constants/constants.dart';
 import 'package:letstalk/core/models/LoggedUser.dart';
 import 'package:letstalk/core/models/Preference.dart';
 import 'package:letstalk/core/providers/AuthProvider.dart';
@@ -36,6 +40,31 @@ class _LandingPageMobileState extends State<LandingPageMobile> {
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
   var location = {};
+  final FirebaseMessaging firebaseMessaging = FirebaseMessaging.instance;
+
+  void storeNotificationToken(String uid) async {
+    print("in ma333 $uid");
+    // FirebaseMessaging.instance.getToken();
+    //Checking my own token in users table in firestore
+    // FirebaseFirestore.instance
+    //     .collection(FirestoreConstants.pathUserCollection)
+    //     // .doc(FirebaseAuth.instance.currentUser!.uid)
+    //     .doc(uid)
+    //     .set({'pushToken': token}, SetOptions(merge: true));
+    // debugPrint("Successfully stored token $token");
+
+    firebaseMessaging.getToken().then((token) {
+      debugPrint('push token: $token');
+      if (token != null) {
+        FirebaseFirestore.instance
+            .collection(FirestoreConstants.pathUserCollection)
+            .doc(uid)
+            .set({'pushToken': token}, SetOptions(merge: true));
+      }
+    }).catchError((err) {
+      Fluttertoast.showToast(msg: err.message.toString());
+    });
+  }
 
   void requestLocation(BuildContext ctx) async {
     print('calling location');
@@ -325,6 +354,15 @@ class _LandingPageMobileState extends State<LandingPageMobile> {
 
                                     Future.delayed(Duration.zero, () {
                                       provider.initializeUserFirebase(userRes);
+                                      String userId =
+                                          FirebaseAuth.instance.currentUser !=
+                                                  null
+                                              ? FirebaseAuth
+                                                  .instance.currentUser!.uid
+                                              : "";
+                                      print("userid: $userId");
+                                      if (userId != "")
+                                        storeNotificationToken(userId);
                                     }).then((value) => Get.toNamed(
                                         loggedUser.imgUrl == ''
                                             ? '/profile'

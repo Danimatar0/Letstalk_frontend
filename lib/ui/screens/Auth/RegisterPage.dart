@@ -755,6 +755,8 @@ class _RegisterState extends State<Register> {
           AlertType.error,
           AnimationType.fromTop,
           Colors.red);
+      _authController.isLoading.toggle();
+
       return;
     } else {
       var prefObj = {

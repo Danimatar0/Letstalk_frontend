@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_advanced_drawer/flutter_advanced_drawer.dart';
@@ -38,10 +39,10 @@ class _MatchingScreenState extends State<MatchingScreen>
   late TextEditingController _textEditingController;
   final _authController = Get.put(AuthController());
   final matchController = Get.put(MatchController());
-  List users = [];
+  List<User> users = RxList<User>();
   RxBool loading = RxBool(true);
   RxDouble avatarRadius = RxDouble(40);
-
+  LoggedUser? user;
   void animateAvatar() {
     // if (avatarRadius <= 60) {
     Future.delayed(Duration(seconds: 3)).then((value) => setState(() {
@@ -64,6 +65,7 @@ class _MatchingScreenState extends State<MatchingScreen>
 
   void action1() {}
   void action2() {}
+
   void _handleLike(int idMatchee) async {
     print('liking $idMatchee');
     final cardProvider = Provider.of<CardProvider>(context, listen: false);
@@ -74,11 +76,13 @@ class _MatchingScreenState extends State<MatchingScreen>
     if (resp['message'] == 'Match 2') {
       print('we have a matchhh wouhouu');
 
-      Get.dialog(ItsAMatch(
-          matcheeName: cardUser != null ? cardUser!.firstname : '',
-          matcheeUrl: cardUser != null ? cardUser!.avatar : '',
-          action1: () => action1(),
-          action2: () => action2()));
+      Get.dialog(AlertDialog(
+        content: ItsAMatch(
+            matcheeName: cardUser != null ? cardUser!.firstname : '',
+            matcheeUrl: cardUser != null ? cardUser!.avatar : '',
+            action1: () => action1(),
+            action2: () => action2()),
+      ));
     }
     cardProvider.like();
   }
@@ -91,6 +95,8 @@ class _MatchingScreenState extends State<MatchingScreen>
     Future.delayed(Duration.zero, () {
       localProvider = Provider.of<CardProvider>(context, listen: false);
       localProvider.initializeUsers();
+      final size = MediaQuery.of(context).size;
+      localProvider.setScreenSize(size);
     }).then((value) {
       Future.delayed(Duration(milliseconds: 300), () {
         // print(localProvider.allUsers);
@@ -99,10 +105,159 @@ class _MatchingScreenState extends State<MatchingScreen>
         });
       });
     }).then((value) => loading.toggle());
+    setState(() {
+      user = LoggedUser.fromJson(_authController.user);
+    });
   }
 
+  int getUserAge(String currDate, String dob) {
+    currDate = currDate.split(" ")[0];
+    dob = '${dob.split("-")[2]}-${dob.split("-")[1]}-${dob.split("-")[0]}';
+    String year = currDate.split('-')[0];
+    String month = currDate.split('-')[1];
+    String day = currDate.split('-')[2];
+    String dateToFormat = '$year-$month-$day';
+    var date = DateTime.parse(dateToFormat);
+    var dobDate = DateTime.parse(dob);
+    var diff = date.difference(dobDate);
+    // print('dtf $date');
+    // print('dob date $dobDate');
+    var age = diff.inDays / 365;
+    // print('user age $age');
+    return age.round();
+  }
+
+  Widget buildName(User us) => Row(
+        mainAxisSize: MainAxisSize.max,
+        mainAxisAlignment: MainAxisAlignment.start,
+        children: [
+          Flexible(
+            child: Text(
+              us.firstname + ' ' + us.lastname,
+              style: const TextStyle(
+                  fontSize: 32,
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold),
+            ),
+          ),
+          SizedBox(
+            width: 8,
+          ),
+          Text(getUserAge(getCurrentDate(), us.dob).toString(),
+              style: const TextStyle(
+                  fontSize: 16,
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold)),
+        ],
+      );
+
+  Widget buildStatus(User us) => Row(
+        children: [
+          Container(
+            width: 12,
+            height: 12,
+            decoration:
+                BoxDecoration(shape: BoxShape.circle, color: Colors.green),
+          ),
+          const SizedBox(
+            width: 8,
+          ),
+          Text('Recently Active',
+              style: const TextStyle(
+                  fontSize: 20,
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold)),
+        ],
+      );
+
+  Widget buildCard(User us) {
+    print("avatar: " + us.avatar);
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(20),
+      child: Container(
+          decoration: us.avatar == ''
+              ? null
+              : BoxDecoration(
+                  image: DecorationImage(
+                      image: NetworkImage(us.avatar),
+                      fit: BoxFit.cover,
+                      alignment: Alignment(-0.3, 0))),
+          child: Container(
+            decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                    colors: [Colors.transparent, Colors.black],
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    stops: [0.7, 1])),
+            child: Container(
+              padding: const EdgeInsets.all(20),
+              height: .7.sh,
+              child: Column(
+                children: [
+                  const Spacer(),
+                  buildName(us),
+                  const SizedBox(
+                    height: 8,
+                  ),
+                  buildStatus(us)
+                ],
+              ),
+            ),
+          )),
+    );
+  }
+
+  Widget buildFrontCard(User us) => GestureDetector(
+        child: LayoutBuilder(builder: (context, constraints) {
+          final provider = Provider.of<CardProvider>(context, listen: false);
+          final position = provider.position;
+          final millis = provider.isDragging ? 0 : 400;
+          final angle = provider.angle * pi / 180;
+          final center = constraints.smallest.center(Offset.zero);
+          final rotatedMatrix = Matrix4.identity()
+            ..translate(center.dx, center.dy)
+            ..rotateZ(angle)
+            ..translate(-center.dx, -center.dy);
+          print("here");
+          return AnimatedContainer(
+              duration: Duration(milliseconds: millis),
+              curve: Curves.easeInOut,
+              transform: rotatedMatrix..translate(position.dx, position.dy),
+              child: buildCard(us));
+        }),
+        onPanStart: (details) {
+          final provider = Provider.of<CardProvider>(context, listen: false);
+          provider.startPosition();
+        },
+        onPanUpdate: (details) {
+          final provider = Provider.of<CardProvider>(context, listen: false);
+          provider.updatePosition(details);
+        },
+        onPanEnd: (details) {
+          final provider = Provider.of<CardProvider>(context, listen: false);
+          provider.endPosition();
+        },
+      );
+  Widget buildRearCard(User us) => ClipRRect(
+        borderRadius: BorderRadius.circular(20),
+        child: Container(
+            child: us.avatar == ''
+                ? CircleAvatar(
+                    child: Container(
+                      color: PRIMARY_COLOR,
+                    ),
+                  )
+                : null,
+            decoration: us.avatar == ''
+                ? null
+                : BoxDecoration(
+                    image: DecorationImage(
+                        image: NetworkImage(us.avatar),
+                        fit: BoxFit.cover,
+                        alignment: Alignment(-0.3, 0)))),
+      );
   Widget buildCoCentricCircles(int nbCircles) {
-    LoggedUser user = LoggedUser.fromJson(_authController.user);
+    // LoggedUser user = LoggedUser.fromJson(_authController.user);
     List<Widget> stackChildren = [];
     // for (var v = 0; v < 5000; v++) {
     //   animateAvatar();
@@ -124,10 +279,12 @@ class _MatchingScreenState extends State<MatchingScreen>
               ? Obx(
                   () {
                     double size = avatarRadius.value;
-                    print(size);
+                    // print(size);
                     return CircleAvatar(
                       radius: size,
-                      backgroundImage: NetworkImage(user.imgUrl, scale: 1.0),
+                      backgroundImage: user!.imgUrl == ''
+                          ? null
+                          : NetworkImage(user!.imgUrl, scale: 1.0),
                     );
                   },
                 )
@@ -149,7 +306,19 @@ class _MatchingScreenState extends State<MatchingScreen>
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
-        children: [buildCoCentricCircles(3)],
+        children: [
+          buildCoCentricCircles(3),
+          Center(
+            child: Container(
+              margin: EdgeInsets.only(left: 40),
+              child: Text(
+                "OOPS! We couldn't find any user in your area or your food partner, Be patient ;)",
+                style:
+                    TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -157,6 +326,7 @@ class _MatchingScreenState extends State<MatchingScreen>
   @override
   Widget build(BuildContext context) {
     final provider = Provider.of<CardProvider>(context, listen: true);
+    final size = MediaQuery.of(context).size;
 
     Widget buildLogo() => Row(
           children: [
@@ -231,17 +401,69 @@ class _MatchingScreenState extends State<MatchingScreen>
 
     Widget buildCards() {
       ///users is a list of users having the same preference(cuisine) as the logged in user
-      return users.isEmpty
-          ? buildNoUsersLeft()
-          : Stack(
-              children: users.map((u) {
-              cardUser = (u as User);
-              return MatchCard(
-                user: u,
-                isFront: users.last == u,
-                callBack: () {},
-              );
-            }).toList());
+      return Container(
+          child: FutureBuilder<dynamic>(
+        future: getUsersByPreferenceId(user!.username, user!.token!),
+        builder: (
+          BuildContext context,
+          AsyncSnapshot<dynamic> snapshot,
+        ) {
+          // print(snapshot.connectionState);
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return CircularProgressIndicator();
+          } else if (snapshot.connectionState == ConnectionState.done) {
+            if (snapshot.hasError) {
+              //zedla shi oops kaza
+              return const Text('Error');
+            } else if (snapshot.hasData) {
+              List myUsers = snapshot.data;
+              print("my fucking userss $myUsers");
+              return myUsers.isEmpty
+                  ? buildNoUsersLeft()
+                  : SizedBox(
+                      height: .4.sh,
+                      child: Stack(
+                          children: myUsers.map((u) {
+                        print("u -> $u");
+                        User cardUser = User.fromMap(u);
+                        bool isLastCard = myUsers.last == cardUser;
+                        final cardProvider =
+                            Provider.of<CardProvider>(context, listen: false);
+                        // cardProvider.setScreenSize(size);
+                        if (isLastCard)
+                          matchController.updateMatchee(cardUser.id);
+                        return isLastCard
+                            ? buildFrontCard(cardUser)
+                            : buildRearCard(cardUser);
+                        // return MatchCard(
+                        //   user: cardUser,
+                        //   isFront: true,
+                        //   callBack: () {},
+                        // );
+                      }).toList()),
+                    );
+            } else {
+              return buildNoUsersLeft();
+            }
+          } else {
+            return Text('State: ${snapshot.connectionState}');
+          }
+        },
+      ));
+      // return Obx(() {
+      //   print("users empty ?? ${users.isEmpty}");
+      //   return users.isEmpty
+      //       ? buildNoUsersLeft()
+      //       : Stack(
+      //           children: users.map((u) {
+      //           cardUser = (u as User);
+      //           return MatchCard(
+      //             user: u,
+      //             isFront: users.last == u,
+      //             callBack: () {},
+      //           );
+      //         }).toList());
+      // });
     }
 
     return AdvancedDrawer(
